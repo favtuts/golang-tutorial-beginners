@@ -66,6 +66,26 @@ switch expression {
     }
 ```
 
+# Arrays
+
+```
+# The syntax for declaring an array is
+var arrayname [size] type
+
+# Each array element can be assigned value using the syntax
+arrayname [index] = value
+
+# Can assign values to array elements during declaration using the syntax
+arrayname := [size] type {value_0,value_1,…,value_size-1} 
+
+# Can also ignore the size parameter while declaring the array with values by replacing size with … 
+# and the compiler will find the length from the number of values
+arrayname :=  […] type {value_0,value_1,…,value_size-1}
+
+# Can find the length of the array by using the syntax
+len(arrayname)
+```
+
 
 # Go for VS Code extension
 
