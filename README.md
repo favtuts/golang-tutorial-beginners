@@ -86,6 +86,19 @@ arrayname :=  […] type {value_0,value_1,…,value_size-1}
 len(arrayname)
 ```
 
+# Slice and Append
+
+```
+# The syntax for creating a slice is
+var slice_name [] type = array_name[start:end]
+
+len(slice_name) – returns the length of the slice
+
+append(slice_name, value_1, value_2) – Golang append is used to append value_1 and value_2 to an existing slice.
+
+append(slice_nale1,slice_name2…) – appends slice_name2 to slice_name1
+```
+
 
 # Go for VS Code extension
 
