@@ -7,6 +7,50 @@ The source code for blog post: https://www.favtuts.com/golang-tutorial-learn-go-
 go run <filename>
 ```
 
+# Declare variable
+
+```
+# Variable can be declared using the syntax
+var <variable_name> <type>
+
+# give an initial value to a variable during the declaration itself 
+var <variable_name> <type> = <value>
+
+# omit the type during the declaration using the syntax
+var <variable_name> = <value>
+
+# declare multiple variables with the syntax
+var <variable_name1>, <variable_name2>  = <value1>, <value2>
+
+# declaring the variables with value by omitting the var keyword using
+<variable_name> := <value>
+```
+
+# Declare constant
+
+```
+# eclared by using the keyword “const”
+const <constant_name> =<value>
+```
+
+# For Loop syntax
+
+```
+for initialisation_expression; evaluation_expression; iteration_expression{
+   // one or more statement
+}
+```
+
+# If else syntax
+
+```
+if condition{
+// statements_1
+}else{
+// statements_2
+}
+```
+
 
 # Go for VS Code extension
 
