@@ -51,6 +51,21 @@ if condition{
 }
 ```
 
+# Switch syntax
+
+```
+switch expression {
+    case value_1:
+        statements_1
+    case value_2:
+        statements_2
+    case value_n:
+        statements_n
+    default:
+        statements_default
+    }
+```
+
 
 # Go for VS Code extension
 
