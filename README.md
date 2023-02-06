@@ -100,6 +100,15 @@ append(slice_nale1,slice_name2…) – appends slice_name2 to slice_name1
 ```
 
 
+# Functions syntax
+
+```
+func function_name(parameter_1 type, parameter_n type) return_type {
+//statements
+}
+```
+
+
 # Go for VS Code extension
 
 ```
