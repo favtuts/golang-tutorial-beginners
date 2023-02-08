@@ -108,6 +108,13 @@ func function_name(parameter_1 type, parameter_n type) return_type {
 }
 ```
 
+# Packages syntax
+
+```
+# can import other packages in our program using the syntax
+import package_name
+```
+
 
 # Go for VS Code extension
 
