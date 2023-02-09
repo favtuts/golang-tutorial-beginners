@@ -119,11 +119,26 @@ import package_name
 
 A pointer variable stores the memory address of another variable.
 The asterisk(*) represents the variable is a pointer
-
 ```
 var variable_name *type
 ```
 
+# Structures syntax
+
+A Structure is a user defined datatype which itself contains one more element of the same or different type.
+The syntax for declaring a structure is
+```
+type struct_name struct {
+   variable_1 variable_1_type
+   variable_2 variable_2_type
+   variable_n variable_n_type
+}
+```
+
+create variables of the type
+```
+var variable_name struct_name
+```
 
 # Go for VS Code extension
 
