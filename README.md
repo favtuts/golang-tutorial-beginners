@@ -115,6 +115,15 @@ func function_name(parameter_1 type, parameter_n type) return_type {
 import package_name
 ```
 
+# Pointers syntax
+
+A pointer variable stores the memory address of another variable.
+The asterisk(*) represents the variable is a pointer
+
+```
+var variable_name *type
+```
+
 
 # Go for VS Code extension
 
