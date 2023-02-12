@@ -203,6 +203,13 @@ Mutex is the short form for mutual exclusion. Mutex is used when you don’t wan
 
 Mutex has 2 methods – Lock and Unlock. Mutex is contained in `sync` package. So, you have to import the `sync` package. The statements which have to be mutually exclusively executed can be placed inside `mutex.Lock()` and `mutex.Unlock()`.
 
+
+# Error handling
+
+Errors are abnormal conditions like closing a file which is not opened, open a file which doesn’t exist, etc. Functions usually return errors as the last return value.
+
+
+
 # Go for VS Code extension
 
 ```
