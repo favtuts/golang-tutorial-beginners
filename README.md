@@ -197,6 +197,12 @@ Select can be viewed as a switch statement which works on channels.
 
 Add a default case to the select in the same program and see the output. Here, on reaching select block, if no case is having data ready on the channel, it will execute the default block without waiting for data to be available on any channel.
 
+# Mutex
+
+Mutex is the short form for mutual exclusion. Mutex is used when you don’t want to allow a resource to be accessed by multiple subroutines at the same time. 
+
+Mutex has 2 methods – Lock and Unlock. Mutex is contained in `sync` package. So, you have to import the `sync` package. The statements which have to be mutually exclusively executed can be placed inside `mutex.Lock()` and `mutex.Unlock()`.
+
 # Go for VS Code extension
 
 ```
