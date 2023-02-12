@@ -140,6 +140,16 @@ create variables of the type
 var variable_name struct_name
 ```
 
+# Methods(not functions)
+
+A method is a function with a receiver argument. Architecturally, it’s between the func keyword and method name. The syntax of a method is
+```
+func (variable variabletype) methodName(parameter1 paramether1type) {  
+}
+```
+
+Go is not an object oriented language and it doesn’t have the concept of class. Methods give a feel of what you do in object oriented programs where the functions of a class are invoked using the syntax `objectname.functionname()`
+
 # Go for VS Code extension
 
 ```
