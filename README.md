@@ -163,6 +163,32 @@ go function_name(parameter list)
 ```
 
 
+# Channels
+
+Channels are a way for functions to communicate with each other. It can be thought as a medium to where one routine places data and is accessed by another routine in Golang server.
+
+A channel can be declared with the syntax
+```
+channel_variable := make(chan datatype)
+```
+You can send data to a channel using the syntax
+```
+channel_variable <- variable_name
+```
+You can receive data from a channel using the syntax
+```
+variable_name := <- channel_variable
+```
+
+The sender who pushes data to channel can inform the receivers that no more data will be added to the channel by closing the channel. This is mainly used when you use a loop to push data to a channel. A channel can be closed using
+```
+close(channel_name)
+```
+And at the receiver end, it is possible to check whether the channel is closed using an additional variable while fetching data from channel using
+```
+variable_name, status := <- channel_variable
+```
+If the status is True it means you received data from the channel. If false, it means you are trying to read from a closed channel
 # Go for VS Code extension
 
 ```
