@@ -150,6 +150,19 @@ func (variable variabletype) methodName(parameter1 paramether1type) {
 
 Go is not an object oriented language and it doesn’t have the concept of class. Methods give a feel of what you do in object oriented programs where the functions of a class are invoked using the syntax `objectname.functionname()`
 
+
+# Goroutines
+
+A goroutine is a function which can run concurrently with other functions, the calling function will not wait for the execution of the invoked function to complete. It will continue to execute with the next statements. You can have multiple goroutines in a program.
+
+Goroutine is invoked using keyword go followed by a function call.
+
+```
+go add(x,y)
+go function_name(parameter list)
+```
+
+
 # Go for VS Code extension
 
 ```
