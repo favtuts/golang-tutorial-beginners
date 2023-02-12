@@ -189,6 +189,14 @@ And at the receiver end, it is possible to check whether the channel is closed u
 variable_name, status := <- channel_variable
 ```
 If the status is True it means you received data from the channel. If false, it means you are trying to read from a closed channel
+
+
+# Select
+
+Select can be viewed as a switch statement which works on channels.
+
+Add a default case to the select in the same program and see the output. Here, on reaching select block, if no case is having data ready on the channel, it will execute the default block without waiting for data to be available on any channel.
+
 # Go for VS Code extension
 
 ```
