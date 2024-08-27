@@ -105,5 +105,55 @@ replace favtuts.com/operations => ../operations
 require github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
 
 // This is a random version number I added. You can actually put any semantic version here
-require yasint.dev/operations v0.0.0
+require favtuts.com/operations v0.0.0
+```
+
+And now, when you compile `calcapp` module using `go install`, it will use your local code rather than resolve a non-existing web dependency.
+
+We can safely paste the following source in `main.go`
+```go
+package main
+
+import (
+	"calcapp/formatters"
+	"flag"
+	"fmt"
+
+	"favtuts.com/operations"
+)
+
+func main() {
+
+	isSubtraction := flag.Bool("sub", false, "subtraction operation")
+	aValue := flag.Int("a", 0, "a value")
+	bValue := flag.Int("b", 0, "b value")
+
+	flag.Parse()
+
+	if *isSubtraction {
+		formatters.Red(
+			fmt.Sprintf(
+				"Subtraction: %d",
+				operations.Sub(*aValue, *bValue),
+			),
+		)
+	} else {
+		formatters.Green(
+			fmt.Sprintf(
+				"Addition: %d",
+				operations.Add(*aValue, *bValue),
+			),
+		)
+	}
+
+}
+
+```
+
+Install the program and run it
+```sh
+cd $DIR/calcapp
+go install
+calcapp -a 10 -b 10     # => Addition: 20
+calcapp -sub -a 10 -b 5 # => Subtraction: 5
 ```
