@@ -1,0 +1,1 @@
+# Structuring your Golang app: Flat structure vs. layered architecture
