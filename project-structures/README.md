@@ -249,3 +249,59 @@ Get single note
 ```bash
 curl --location 'http://localhost:8000/notes/1'
 ```
+
+# Using a layered architecture (classic MVC structure) in Go
+
+Let’s see what a layered architecture structure looks like:
+```bash
+layered_app/
+  app/
+    models/
+      User.go         
+    controllers/
+      UserController.go
+  config/
+    app.go
+  views/
+    index.html
+  public/
+    images/
+      logo.png
+  main.go
+  go.mod
+  go.sum
+```
+
+Although layered architecture is not ideal for building simple libraries, it’s well suited for building APIs and other large applications.
+
+# Updating the Go app with a layered architecture
+
+Create a new folder called `notes_api_layered` and initialize a Go module in it by running the snippet below:
+```bash
+mkdir notes_api_layered
+cd notes_api_layered
+go mod init github.com/username/notes_api_layered
+```
+
+Install the required SQLite and Gin packages.
+```bash
+go get github.com/mattn/go-sqlite3
+go get github.com/gin-gonic/gin
+```
+
+Now, update the project folder structure to look like this:
+```bash
+notes_api_layered/
+  config/
+    db.go
+  controllers/
+    note.go
+  migrations/
+    main.go
+    note.go
+  models/
+    note.go
+  go.mod
+  go.sum
+  main.go
+```
