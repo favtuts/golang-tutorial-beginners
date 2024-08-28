@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/didip/tollbooth/v7"
 	"golang.org/x/time/rate"
 )
 
@@ -110,7 +111,19 @@ func perClientRateLimiter(next func(writer http.ResponseWriter, request *http.Re
 func main() {
 	log.Println("Starting the web application...")
 	// http.Handle("/ping", rateLimiter(endpointHandler))
-	http.Handle("/ping", perClientRateLimiter(endpointHandler))
+	// http.Handle("/ping", perClientRateLimiter(endpointHandler))
+
+	message := Message{
+		Status: "Request Failed",
+		Body:   "The API is at capacity, try again later.",
+	}
+	jsonMessage, _ := json.Marshal(message)
+
+	tlbthLimiter := tollbooth.NewLimiter(1, nil)
+	tlbthLimiter.SetMessageContentType("application/json")
+	tlbthLimiter.SetMessage(string(jsonMessage))
+	http.Handle("/ping", tollbooth.LimitFuncHandler(tlbthLimiter, endpointHandler))
+
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Println("There was an error listening on port :8080", err)
