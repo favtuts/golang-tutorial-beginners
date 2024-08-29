@@ -2,7 +2,7 @@
 * https://tuts.heomi.net/how-to-rate-limit-http-requests-in-go-application/
 
 
-# Create web application
+# Global rate limiter
 
 Create a demo directory containing two files, `limit.go` and `main.go`, and initialize a new Go module
 ```bash
@@ -91,3 +91,5 @@ Content-Length: 18
 
 Too Many Requests
 ```
+
+# Rate limiting per user
