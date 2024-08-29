@@ -189,7 +189,7 @@ go get github.com/lib/pq
 
 A minimal implementation of the code for that could look something like this:
 
-**File: main.go**
+**File: shop.go**
 
 ```go
 package main
@@ -254,3 +254,126 @@ func calculateSalesRate(sdb *ShopDB) (string, error) {
 Now, what if we want to create a unit test for the `calculateSalesRate()` function to make sure that the math logic in it is working correctly?
 
 A solution here is to create our own interface type which describes the `CountSales()` and `CountCustomers()` methods that the `calculateSalesRate()` function relies on. Then we can update the signature of `calculateSalesRate()` to use this custom interface type as a parameter, instead of the concrete `*ShopDB` type.
+
+Re-update the **File: shop.go**:
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"time"
+
+	_ "github.com/lib/pq"
+)
+
+// Create our own custom ShopModel interface. Notice that it is perfectly
+// fine for an interface to describe multiple methods, and that it should
+// describe input parameter types as well as return value types.
+type ShopModel interface {
+	CountCustomers(time.Time) (int, error)
+	CountSales(time.Time) (int, error)
+}
+
+// The ShopDB type satisfies our new custom ShopModel interface, because it
+// has the two necessary methods -- CountCustomers() and CountSales().
+type ShopDB struct {
+	*sql.DB
+}
+
+func (sdb *ShopDB) CountCustomers(since time.Time) (int, error) {
+	var count int
+	err := sdb.QueryRow("SELECT count(*) FROM customers WHERE timestamp > $1", since).Scan(&count)
+	return count, err
+}
+
+func (sdb *ShopDB) CountSales(since time.Time) (int, error) {
+	var count int
+	err := sdb.QueryRow("SELECT count(*) FROM sales WHERE timestamp > $1", since).Scan(&count)
+	return count, err
+}
+
+func main() {
+	db, err := sql.Open("postgres", "postgres://user:pass@localhost/db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	shopDB := &ShopDB{db}
+	sr, err := calculateSalesRate(shopDB)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf(sr)
+}
+
+// Swap this to use the ShopModel interface type as the parameter, instead of the
+// concrete *ShopDB type.
+func calculateSalesRate(sm ShopModel) (string, error) {
+	since := time.Now().Add(-24 * time.Hour)
+
+	sales, err := sm.CountSales(since)
+	if err != nil {
+		return "", err
+	}
+
+	customers, err := sm.CountCustomers(since)
+	if err != nil {
+		return "", err
+	}
+
+	rate := float64(sales) / float64(customers)
+	return fmt.Sprintf("%.2f", rate), nil
+}
+```
+
+With that done, it’s straightforward for us to create a mock which satisfies our `ShopModel` interface. We can then use that mock during unit tests to test that the math logic in our `calculateSalesRate()` function works correctly. Like so:
+
+**File: shop_test.go**
+
+```go
+package main
+
+import (
+    "testing"
+    "time"
+)
+
+type MockShopDB struct{}
+
+func (m *MockShopDB) CountCustomers(_ time.Time) (int, error) {
+    return 1000, nil
+}
+
+func (m *MockShopDB) CountSales(_ time.Time) (int, error) {
+    return 333, nil
+}
+
+func TestCalculateSalesRate(t *testing.T) {
+    // Initialize the mock.
+    m := &MockShopDB{}
+    // Pass the mock to the calculateSalesRate() function.
+    sr, err := calculateSalesRate(m)
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    // Check that the return value is as expected, based on the mocked
+    // inputs.
+    exp := "0.33"
+    if sr != exp {
+        t.Fatalf("got %v; expected %v", sr, exp)
+    }
+}
+```
+
+You could run that test now, everything should work fine.
+```bash
+$ go test -run "^TestCalculateSalesRate$"
+
+PASS
+ok      golanginterfaces        0.002s
+```
+
