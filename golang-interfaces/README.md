@@ -177,3 +177,80 @@ $ go run .
 $ cat /tmp/customer
 {"Name":"Alice","Age":21}
 ```
+
+# Unit testing and mocking
+
+Let’s say you run a shop, and you store information about the number of customers and sales in a PostgreSQL database. You want to write some code that calculates the sales rate (i.e. sales per customer) for the past 24 hours, rounded to 2 decimal places.
+
+First install the Go postgres driver
+```bash
+go get github.com/lib/pq
+```
+
+A minimal implementation of the code for that could look something like this:
+
+**File: main.go**
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "time"
+    "database/sql"
+    _ "github.com/lib/pq"
+)
+
+type ShopDB struct {
+    *sql.DB
+}
+
+func (sdb *ShopDB) CountCustomers(since time.Time) (int, error) {
+    var count int
+    err := sdb.QueryRow("SELECT count(*) FROM customers WHERE timestamp > $1", since).Scan(&count)
+    return count, err
+}
+
+func (sdb *ShopDB) CountSales(since time.Time) (int, error) {
+    var count int
+    err := sdb.QueryRow("SELECT count(*) FROM sales WHERE timestamp > $1", since).Scan(&count)
+    return count, err
+}
+
+func main() {
+    db, err := sql.Open("postgres", "postgres://user:pass@localhost/db")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer db.Close()
+
+    shopDB := &ShopDB{db}
+    sr, err := calculateSalesRate(shopDB)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf(sr)
+}
+
+func calculateSalesRate(sdb *ShopDB) (string, error) {
+    since := time.Now().Add(-24 * time.Hour)
+
+    sales, err := sdb.CountSales(since)
+    if err != nil {
+        return "", err
+    }
+
+    customers, err := sdb.CountCustomers(since)
+    if err != nil {
+        return "", err
+    }
+
+    rate := float64(sales) / float64(customers)
+    return fmt.Sprintf("%.2f", rate), nil
+}
+```
+
+Now, what if we want to create a unit test for the `calculateSalesRate()` function to make sure that the math logic in it is working correctly?
+
+A solution here is to create our own interface type which describes the `CountSales()` and `CountCustomers()` methods that the `calculateSalesRate()` function relies on. Then we can update the signature of `calculateSalesRate()` to use this custom interface type as a parameter, instead of the concrete `*ShopDB` type.
