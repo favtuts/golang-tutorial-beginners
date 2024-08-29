@@ -7,3 +7,5 @@ Collect all tutorials for Begginers
 * [How GOROOT and GOPATH Works](./go-modules-demo/README.md)
 * [Structuring your Golang app: Flat structure vs. layered architecture](./project-structures/README.md)
 * [Rate limiting your Go application](./rate-limiting/README.md)
+* [How to Rate Limit HTTP Requests](./ratelimit-demo/README.md)
+* [Implementing an in-memory cache in Go](./in-memory-cache/README.md)
