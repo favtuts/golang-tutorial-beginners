@@ -9,3 +9,4 @@ Collect all tutorials for Begginers
 * [Rate limiting your Go application](./rate-limiting/README.md)
 * [How to Rate Limit HTTP Requests](./ratelimit-demo/README.md)
 * [Implementing an in-memory cache in Go](./in-memory-cache/README.md)
+* [Golang Interfaces Explained](./golang-interfaces/README.md)
