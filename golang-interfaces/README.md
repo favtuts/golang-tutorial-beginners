@@ -377,3 +377,72 @@ PASS
 ok      golanginterfaces        0.002s
 ```
 
+# What is the empty interface?
+
+An interface type in Go is kind of like a definition. It defines and describes the exact methods that some other type must have.
+
+The empty interface type: `interface{}`. The empty interface type essentially describes no methods. It has no rules. And because of that, it follows that any and every object satisfies the empty interface. The empty interface type interface{} is kind of like a wildcard, you can declare the empty interface to use an object of any type.
+
+Example:
+```go
+package main
+
+import "fmt"
+
+
+func main() {
+    person := make(map[string]interface{}, 0)
+
+    person["name"] = "Alice"
+    person["age"] = 21
+    person["height"] = 167.64
+
+    fmt.Printf("%+v", person)
+}
+```
+
+In this code snippet we initialize a `person` map, which uses the `string` type for keys and the empty interface type `interface{}` for values. We’ve assigned three different types as the map values (a `string`, `int` and `float32`) — and that’s OK. Because objects of any and every type satisfy the empty interface, the code will work just fine.
+
+You can test it as follow:
+```bash
+s$ go run .
+map[age:21 height:167.64 name:Alice]
+```
+
+There’s an important thing to point out when it comes to retrieving and using a value from this map. Let’s say that we want to get the "age" value and increment it by 1. If you write something like the following code, it will fail to compile:
+```go
+person["age"] = person["age"] + 1
+```
+
+And you’ll get the following error message:
+```bash
+invalid operation: person["age"] + 1 (mismatched types interface {} and int)
+```
+
+To get around this this, you need to type assert the value back to an int before using it
+```go
+age, ok := person["age"].(int)
+if !ok {
+    log.Fatal("could not assert value to int")
+    return
+}
+
+person["age"] = age + 1
+```
+
+So when should you use the empty interface type in your own code?
+
+The answer is *probably not that often*. If you find yourself reaching for it, pause and consider whether using `interface{}` is really the right option. As a general rule it’s clearer, safer and more performant to use concrete types — or non-empty interface types — instead. In the code snippet above, it would have been more appropriate to define a `Person` struct with relevant typed fields similar to this:
+```go
+type Person struct {
+    Name   string
+    Age    int
+    Height float32
+}
+```
+
+But that said, the empty interface is useful in situations where you need to accept and work with unpredictable or user-defined types.
+
+# The any identifier
+
+Go 1.18 introduced a new [predeclared identifier](https://tip.golang.org/ref/spec#Predeclared_identifiers) called [any](https://pkg.go.dev/builtin#any), which is an alias for the empty interface `interface{}`. So writing `map[string]any` in your code is exactly the same as writing `map[string]interface{}` in terms of it’s behavior. In most modern Go codebases, you’ll normally see `any` being used rather than `interface{}`.
