@@ -123,3 +123,46 @@ Change the value for `program` in the JSON settings above to the application fil
 To debug the application, click on the play icon near `RUN AND DEBUG`, which will display the program output in the `DEBUG CONSOLE` window:
 
 ![Run_Debug_Console](./images/debug-console-window-output.png)
+
+
+# Debugging using unit testing
+
+We can also use unit testing to debug Go applications; unit testing helps to ensure that each component of the application performs its intended function properly. 
+
+Create a test file named main_test.go and add the following code to the file:
+```go
+package main
+import "testing"
+
+func average(score1, score2, score3 int) int {
+    return ((score1 + score2 + score3) / 3)
+}
+func Test_arerage(t *testing.T) {
+    score1, score2, score3 := 10, 18, 41
+
+    averageScore := average(score1, score2, score3)
+    if averageScore == 0 {
+        t.Fail()
+    }
+
+}
+```
+
+The two functions above enable us to calculate the average value of three numbers. The function to be tested (`Test_average`) is preceded by the `Test_` keyword. 
+
+To run the unit test, enter the command below:
+```bash
+$ go test
+
+PASS
+ok      github.com/favtuts/go-debugging 0.002s
+```
+
+Now let’s debug our test file by adding a breakpoint to the program as shown below:
+
+![break_point_test_file](./images/golang-debug-unit-test.png)
+
+
+Now you can start the debugging session, then use the Debug Tool to step over and inspect each variable and change their value under the variables section.
+
+![debugging_session_test_file](./images/Golang-unit-testing-debug-tool.png)
