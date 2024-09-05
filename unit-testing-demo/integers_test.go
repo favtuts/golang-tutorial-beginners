@@ -56,3 +56,20 @@ func TestMultiplySubtests(t *testing.T) {
 		})
 	}
 }
+
+func TestAddTableDriven(t *testing.T) {
+	cases := []testCase{
+		{1, 1, 2},
+		{7, 5, 12},
+		{-19, -3, -22},
+		{-1, 8, 7},
+		{-12, 0, -12},
+	}
+
+	for _, tc := range cases {
+		got := Add(tc.arg1, tc.arg2)
+		if tc.want != got {
+			t.Errorf("Expected '%d', but got '%d'", tc.want, got)
+		}
+	}
+}

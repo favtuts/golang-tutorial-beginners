@@ -177,3 +177,93 @@ $ go test -v
 PASS
 ok      github.com/favtuts/unit-testing 0.002s
 ```
+
+
+# Go’s built-in code coverage method
+
+Since Go v1.2, developers can use the `-cover` option with `go test` to generate a code coverage report:
+```bash
+$ go test -cover
+PASS
+coverage: 100.0% of statements
+ok      github.com/favtuts/unit-testing 0.002s
+```
+
+We’ve managed to achieve 100 percent test coverage for our code, however, we’ve only tested a single function comprehensively. Let’s add a new function in the `integers.go` file without writing a test for it:
+```go
+// integers.go
+
+// Add returns the summation of two integers
+func Add(a, b int) int {
+  return a + b
+}
+```
+
+When we run the tests again with the `-cover` option, we’ll see coverage of just 50 percent:
+```bash
+$ go test -cover
+PASS
+coverage: 50.0% of statements
+ok      github.com/favtuts/unit-testing 0.002s
+```
+
+# Examining our codebase
+
+Let’s convert the coverage report to a file using the `--coverprofile` option so we can examine it more closely:
+```bash
+$ go test -coverprofile=coverage.out
+PASS
+coverage: 50.0% of statements
+ok      github.com/favtuts/unit-testing 0.002s
+```
+
+In the code block above, the tests run as before, and code coverage is printed to the console.
+However, the test results are also saved to a new file called `coverage.out` in the current working directory. To study these results, let’s run the following command, which breaks the coverage report down by function:
+```bash
+$ go tool cover -func=coverage.out
+github.com/favtuts/unit-testing/integers.go:5:  Multiply        100.0%
+github.com/favtuts/unit-testing/integers.go:10: Add             0.0%
+total:                                          (statements)    50.0%
+```
+The code block above shows that the `Multiply()` function is fully covered, while the `Add()` function has only 50 percent coverage overall.
+
+# HTML coverage method
+
+Another way to view the results is through an HTML representation. The code block below will open the default web browser automatically, showing the covered lines in green, uncovered lines in red, and uncounted statements in grey:
+```bash
+$ go tool cover -html=coverage.out
+HTML output written to /tmp/cover3537215017/coverage.html
+```
+
+Using the HTML coverage method makes it easy to visualize what you haven’t covered yet. If the package being tested has multiple files, you can select each file from the input on the top right to see its coverage breakdown:
+
+![coverage_html](./html-coverage-method-visual-output.png)
+
+
+Let’s get the code coverage back to 100 percent by adding a test for the `Add()` function, as shown below:
+```go
+func TestAdd(t *testing.T) {
+    cases := []test{
+        {1, 1, 2},
+        {7, 5, 12},
+        {-19, -3, -22},
+        {-1, 8, 7},
+        {-12, 0, -12},
+    }
+
+    for _, tc := range cases {
+        got := Add(tc.arg1, tc.arg2)
+        if tc.want != got {
+            t.Errorf("Expected '%d', but got '%d'", tc.want, got)
+        }
+    }
+}
+```
+
+Running the tests again should display a code coverage of 100 percent:
+```bash
+$ go test -cover
+PASS
+coverage: 100.0% of statements
+ok      github.com/favtuts/unit-testing 0.002s
+```
