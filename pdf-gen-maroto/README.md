@@ -193,3 +193,181 @@ If you run the code using `go run main.go`, you’ll be able to see that a new f
 * https://stackoverflow.com/questions/67800641/error-loading-workspace-err-exit-status-1-stderr-go-updates-to-go-sum-neede
 
 After so much searching, only this worked for me: (1) Disabling all extensions, (2) Closing VS Code and reopening it, (3) Enabling only Go extension
+
+
+# Creating a body
+
+Create a new function called `getShowDetails` which accepts a ticket struct and returns an array of `core.Row` interface. 
+```go
+func getShowDetails(t Ticket) []core.Row {
+    rows := []core.Row{
+        row.New(30).Add(
+            image.NewFromFileCol(4, t.ShowPosterLocation, props.Rect{
+                Center:  true,
+                Percent: 100,
+            }),
+            col.New(8).Add(
+                text.New(t.ShowName, props.Text{
+                    Style: fontstyle.Bold,
+                    Size:  10,
+                }),
+                text.New(t.Language, props.Text{
+                    Top:   6,
+                    Style: fontstyle.Normal,
+                    Size:  8,
+                    Color: &props.Color{Red: 95, Green: 95, Blue: 95},
+                }),
+                text.New(t.ShowTime, props.Text{
+                    Top:   12,
+                    Style: fontstyle.Bold,
+                    Size:  10,
+                }),
+                text.New(t.ShowVenue, props.Text{
+                    Top:   18,
+                    Style: fontstyle.Normal,
+                    Size:  8,
+                    Color: &props.Color{Red: 95, Green: 95, Blue: 95},
+                }),
+            ),
+        ),
+        row.New(6),
+        row.New(1).Add(
+            line.NewCol(12, props.Line{
+                Thickness:   0.2,
+                Color:       &props.Color{Red: 200, Green: 200, Blue: 200},
+                SizePercent: 100,
+                Style:       linestyle.Dashed,
+            }),
+        ),
+        row.New(3),
+        row.New(16).Add(
+            col.New(2).Add(
+                text.New(strconv.Itoa(t.TicketCount), props.Text{
+                    Style: fontstyle.Bold,
+                    Size:  24,
+                    Align: align.Center,
+                }),
+                text.New("Tickets", props.Text{
+                    Top:   12,
+                    Style: fontstyle.Normal,
+                    Size:  8,
+                    Color: &props.Color{Red: 95, Green: 95, Blue: 95},
+                    Align: align.Center,
+                }),
+            ),
+            col.New(2),
+            col.New(8).Add(
+                text.New(t.Screen, props.Text{
+                    Size:  8,
+                    Color: &props.Color{Red: 95, Green: 95, Blue: 95},
+                }),
+                text.New(t.SeatNumber, props.Text{
+                    Top:   6,
+                    Style: fontstyle.Bold,
+                    Size:  14,
+                }),
+            ),
+        ),
+        row.New(3),
+        row.New(1).Add(
+            line.NewCol(12, props.Line{
+                Thickness:   0.2,
+                Color:       &props.Color{Red: 200, Green: 200, Blue: 200},
+                SizePercent: 100,
+                Style:       linestyle.Dashed,
+            }),
+        ),
+        row.New(6),
+        row.New(20).Add(
+            code.NewQrCol(12,
+                fmt.Sprintf("%v\n%v\n%v\n%v", t.ID, t.ShowName, t.ShowTime, t.ShowVenue),
+                props.Rect{
+                    Center:  true,
+                    Percent: 100,
+                },
+            ),
+        ),
+        row.New(10).Add(
+            col.New(12).Add(text.New(fmt.Sprintf("Booking ID: %v", t.ID), props.Text{
+                Style: fontstyle.Normal,
+                Size:  8,
+                Align: align.Center,
+                Top:   2,
+            })),
+        ),
+        row.New(1).Add(
+            line.NewCol(12, props.Line{
+                Thickness:   0.2,
+                Color:       &props.Color{Red: 200, Green: 200, Blue: 200},
+                SizePercent: 100,
+                Style:       linestyle.Solid,
+            }),
+        ),
+        row.New(3),
+        row.New(10).Add(
+            code.NewBarCol(12, strconv.Itoa(t.ID),
+                props.Barcode{
+                    Center:  true,
+                    Percent: 100,
+                },
+            ),
+        ),
+    }
+
+    return rows
+}
+```
+
+# Creating a footer
+
+The footer contains just a single text. The aim is to demonstrate how a footer can be registered in your PDF:
+
+```go
+func getPageFooter() core.Row {
+    return row.New(2).Add(
+        col.New(12).Add(
+            text.New("Powered by ShowBees Ticketing System", props.Text{
+                Style: fontstyle.Italic,
+                Size:  8,
+                Align: align.Center,
+                Color: &props.Color{Red: 255, Green: 120, Blue: 218},
+            }),
+        ),
+    )
+}
+```
+
+
+Now, to register this footer and the `getShowDetails` function into the `getMaroto` function, update this accordingly:
+```go
+func getMaroto(c Company, t Ticket) core.Maroto {
+    cfg := config.NewBuilder().WithDimensions(120, 200).Build()
+
+    // ...
+    // ...
+
+    mrt.AddRow(6)
+
+    mrt.AddRow(4, line.NewCol(12, props.Line{
+        Thickness:   0.2,
+        Color:       &props.Color{Red: 200, Green: 200, Blue: 200},
+        SizePercent: 100,
+    }))
+
+    mrt.AddRow(6)
+
+    mrt.AddRows(getShowDetails(t)...)
+
+    mrt.AddRow(8)
+
+    err = mrt.RegisterFooter(getPageFooter())
+
+    if err != nil {
+        log.Println("Error registering footer")
+    }
+
+    return mrt
+}
+```
+
+If you generate the PDF by running `go run main.go`, you should get a PDF that resembles the image shown earlier in the article.
