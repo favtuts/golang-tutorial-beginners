@@ -21,6 +21,15 @@ func TestMultiply(t *testing.T) {
 	}
 }
 
+func TestAdd(t *testing.T) {
+	got := Add(2, 3)
+	want := 5
+
+	if want != got {
+		t.Errorf("Expected '%d', but got '%d'", want, got)
+	}
+}
+
 func TestMultiplyTableDriven(t *testing.T) {
 	cases := []testCase{
 		{2, 3, 6},

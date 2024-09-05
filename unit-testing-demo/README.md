@@ -267,3 +267,89 @@ PASS
 coverage: 100.0% of statements
 ok      github.com/favtuts/unit-testing 0.002s
 ```
+
+# Running a specific test
+
+For example, if we want to run only the tests for the `Add` function, we’ll pass the test function name as an argument to `-run`:
+```bash
+$ go test -v -run=TestAdd
+=== RUN   TestAddTableDriven
+--- PASS: TestAddTableDriven (0.00s)
+PASS
+ok      github.com/favtuts/unit-testing 0.001s
+```
+
+If you have a set of test functions that begin with the same prefix, like `TestAdd_NegativeNumbers` and `TestAdd_PositiveNumbers`, you can run them in isolation by passing the prefix, `TestAdd`, to `-run`.
+
+Now, let’s assume that we only want to run `TestAdd` and `TestMultiply`, but we have other test functions. We can use a pipe character to separate their names in the argument to `-run`:
+```bash
+$ go test -v -run='TestAdd|TestMultiply'
+```
+
+You can also run a specific subtest by passing its name to `-run`. For example, we can run any of the subtests in the `TestMultiply()` function, as shown below:
+```bash
+$ go test -v -run='TestMultiply/2*3=6'
+```
+
+# Dependency injection
+
+Let’s assume we have a function that prints some output to the console, as shown below:
+```go
+// printer.go
+func Print(text string) {
+    fmt.Println(text)
+}
+```
+
+The `Print()` function above outputs its string argument to the console. To test it, we have to capture its output and compare it to the expected value. However, because we have no control over the implementation of `fmt.Println()`, using this method won’t work in our case. Instead, we can refactor the `Print()` function, making it easier to capture its output.
+
+First, let’s replace the call to `Println()` with a call to `Fprintln()`, which takes an `io.Writer` interface as its first argument, specifying where its output should be written. In our example below, this location is specified as `os.Stdout`. Now, we can match the behavior provided by `Println`:
+```go
+func Print(text string) {
+    fmt.Fprintln(os.Stdout, text)
+}
+```
+
+For our function, it doesn’t matter where we print the text. Therefore, instead of hard-coding `os.Stdout`, we should accept an `io.Writer` interface and pass that to `fmt.Fprintln`:
+```go
+func Print(text string, w io.Writer) {
+    fmt.Fprintln(w, text)
+}
+```
+
+Now, we can control where the output of the `Print()` function is written, making it easy to test our function.
+
+In the example test below, we’ll use a buffer of bytes to capture the output of `Print()`, then compare it to the expected result:
+```go
+// printer_test.go
+func TestPrint(t *testing.T) {
+    var buf bytes.Buffer
+
+    text := "Hello, World!"
+
+    Print(text, &buf)
+
+    got := strings.TrimSpace(buf.String())
+
+    if got != text {
+        t.Errorf("Expected output to be: %s, but got: %s", text, got)
+    }
+}
+```
+
+When utilizing `Print()` in your source code, you can easily inject a concrete type and write to the standard output:
+```go
+func main() {
+    Print("Hello, World!", os.Stdout)
+}
+```
+
+You can run the test:
+```bash
+$ go test -v -run='TestPrint'
+
+=== RUN   TestPrint
+--- PASS: TestPrint (0.00s)
+PASS
+ok      github.com/favtuts/unit-testing 0.001s
+```
