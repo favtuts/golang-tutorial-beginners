@@ -11,3 +11,4 @@ Collect all tutorials for Begginers
 * [Implementing an in-memory cache in Go](./in-memory-cache/README.md)
 * [Golang Interfaces Explained](./golang-interfaces/README.md)
 * [Debugging Go with VS Code](./go-debugging/README.md)
+* [Generating PDFs with Maroto](./pdf-gen-maroto/README.md)
