@@ -130,3 +130,50 @@ $ go test -v
 PASS
 ok      github.com/favtuts/unit-testing 0.002s
 ```
+
+# Using subtests
+
+We can split each test case into a unique test that is run in a separate goroutine by adding a `Run()` method to the `testing.T` type. The `Run()` method takes the name of the subtest as its first argument and the subtest function as the second. You can use the test name to identify and run the subtest individually.
+
+To see it in action, let’s update our `TestMultiply` test, as shown below:
+```go
+func TestMultiply(t *testing.T) {
+    cases := []testCase{
+        {2, 3, 6},
+        {10, 5, 50},
+        {-8, -3, 24},
+        {0, 9, 0},
+        {-7, 6, -42},
+    }
+
+    for _, tc := range cases {
+        t.Run(fmt.Sprintf("%d*%d=%d", tc.arg1, tc.arg2, tc.want), func(t *testing.T) {
+            got := Multiply(tc.arg1, tc.arg2)
+            if tc.want != got {
+                t.Errorf("Expected '%d', but got '%d'", tc.want, got)
+            }
+        })
+    }
+}
+```
+
+Now, when you run the tests with the `-v` flag, each individual test case will be reported in the output. Because we constructed the name of each test from the values in each test case, it’s easy to identify a specific test case that failed.
+
+To name our test cases, we’ll add a `name` property to the `testCase` struct. It’s worth noting that the `TestMultiply` function does not finish running until all its subtests have exited:
+```bash
+$ go test -v
+=== RUN   TestMultiplySubtests
+=== RUN   TestMultiplySubtests/2*3=6
+=== RUN   TestMultiplySubtests/10*5=50
+=== RUN   TestMultiplySubtests/-8*-3=24
+=== RUN   TestMultiplySubtests/0*9=0
+=== RUN   TestMultiplySubtests/-7*6=-42
+--- PASS: TestMultiplySubtests (0.00s)
+    --- PASS: TestMultiplySubtests/2*3=6 (0.00s)
+    --- PASS: TestMultiplySubtests/10*5=50 (0.00s)
+    --- PASS: TestMultiplySubtests/-8*-3=24 (0.00s)
+    --- PASS: TestMultiplySubtests/0*9=0 (0.00s)
+    --- PASS: TestMultiplySubtests/-7*6=-42 (0.00s)
+PASS
+ok      github.com/favtuts/unit-testing 0.002s
+```
