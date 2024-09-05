@@ -108,3 +108,88 @@ func main() {
     }
 }
 ```
+
+# Creating a header
+
+The new function will take a parameter of type `Company` and will return a `core.Row`. The header is pretty simple. Let’s check out the code first:
+```go
+func getPageHeader(c Company) core.Row {
+    return row.New(16).Add(
+        image.NewFromFileCol(4, c.LogoLocation, props.Rect{
+            Center:  false,
+            Percent: 100,
+        }),
+        col.New(2),
+        col.New(6).Add(
+            text.New(c.Name, props.Text{
+                Style: fontstyle.Bold,
+                Size:  10,
+            }),
+            text.New(c.Address, props.Text{
+                Top:  6,
+                Size: 10,
+            }),
+        ),
+    )
+}
+```
+
+The header consists of three columns: an image column, an empty column, and a column containing text components.
+
+Let’s now create a function called `getMaroto` which will be responsible for registering necessary components and returning a `core.Maroto` interface which wraps the basic methods of Maroto.
+
+```go
+func getMaroto(c Company, t Ticket) core.Maroto {
+    cfg := config.NewBuilder().WithDimensions(120, 200).Build()
+
+    mrt := maroto.New(cfg)
+
+    err := mrt.RegisterHeader(getPageHeader(c))
+
+    if err != nil {
+        log.Println("Error registering header")
+    }
+
+    return mrt
+}
+```
+
+At this point, we only have a header component. As we add more components to the PDF, this function will grow larger. The function takes two parameters: a company object and a ticket object.
+
+Update the main function as shown below:
+```go
+func main() {
+  // ...
+    // ...
+
+    m := getMaroto(c, t)
+
+    document, err := m.Generate()
+
+    filename := fmt.Sprintf("ticket-%d.pdf", t.ID)
+
+    if err != nil {
+        log.Println("Error generating PDF")
+    }
+
+    // Check if temp folder exists, if not create it
+    if _, err := os.Stat("temp"); os.IsNotExist(err) {
+        err = os.Mkdir("temp", 0755)
+        if err != nil {
+            log.Println("Error creating directory:", err)
+        }
+    }
+
+    err = document.Save("temp/" + filename)
+    if err != nil {
+        log.Println("Unable to save file:", err)
+    }
+}
+```
+
+If you run the code using `go run main.go`, you’ll be able to see that a new folder called temp is created, and the folder contains a file called ticket-1.pdf.
+
+# Fixed: Error loading workspace: err: exit status 1: stderr: go: updates to go.sum needed, disabled by -mod=readonly : packages.Load error
+* https://stackoverflow.com/questions/67800641/error-loading-workspace-err-exit-status-1-stderr-go-updates-to-go-sum-neede
+
+After so much searching, only this worked for me: (1) Disabling all extensions, (2) Closing VS Code and reopening it, (3) Enabling only Go extension
