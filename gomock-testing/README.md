@@ -22,6 +22,11 @@ Install Testify
 $ go get github.com/stretchr/testify
 ```
 
+To update Testify to the latest version, use 
+```bash
+$ go get -u github.com/stretchr/testify.
+```
+
 Install GoMock
 ```bash
 $ go get github.com/golang/mock/gomock
