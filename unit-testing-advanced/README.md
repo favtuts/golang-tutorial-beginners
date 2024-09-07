@@ -166,7 +166,7 @@ ok      github.com/favtuts/unit-testing 0.802s
 
 Note that the test in the code block above makes HTTP requests to the real API. Doing so affects the dependencies of the code being tested, which is bad practice for unit testing code. Instead, we should mock the HTTP client. We have several different methods for mocking in Go.
 
-## Method 3: Mocking in Go
+# Mocking in Go
 
 A fairly simple pattern for mocking an HTTP client in Go is to create a custom interface. Our interface will define the methods used in a function and pass different implementations depending on where the function is called from.
 
@@ -320,3 +320,64 @@ ok      github.com/favtuts/unit-testing 0.002s
 ```
 
 You can use this same principle when your handler depends on another external system, like a database. Decoupling the handler from any specific implementation allows you to easily mock the dependency in the test while retaining the real implementation in your application’s code.
+
+# Using external data in tests
+
+In Go, you should place external data for tests in a directory called `testdata`. When you build binaries for your programs, the `testdata` directory is ignored, so you can use this approach to store inputs that you want to test your program against.
+
+For example, let’s write a function that generates the `base64` encoding from a binary file:
+```go
+func getBase64Encoding(b []byte) string {
+    return base64.StdEncoding.EncodeToString(b)
+}
+```
+
+To test that this function produces the correct output, let’s place some sample files and their corresponding `base64` encoding in a `testdata` directory at the root of our project:
+```bash
+$ ls testdata
+img1.jpg img1_base64.txt img2.jpg img2_base64.txt img3.jpg img3_base64.txt
+```
+
+To test our `getBase64Encoding()` function, run the code below:
+```go
+func TestGetBase64Encoding(t *testing.T) {
+    cases := []string{"img1", "img2", "img3"}
+
+    for _, v := range cases {
+        t.Run(v, func(t *testing.T) {
+            b, err := os.ReadFile(filepath.Join("testdata", v+".jpg"))
+            if err != nil {
+                t.Fatal(err)
+            }
+
+            expected, err := os.ReadFile(filepath.Join("testdata", v+"_base64.txt"))
+            if err != nil {
+                t.Fatal(err)
+            }
+
+            got := getBase64Encoding(b)
+
+            if string(expected) != got {
+                t.Fatalf("Expected output to be: '%s', but got: '%s'", string(expected), got)
+            }
+        })
+    }
+}
+```
+
+The bytes for each sample file are read from the file system and then fed into the `getBase64Encoding()` function. The output is subsequently compared to the expected output, which is also retrieved from the `testdata` directory.
+
+Let’s make the test easier to maintain by creating a subdirectory inside of `testdata`. Inside of our subdirectory, we’ll add all of the input files, allowing us to simply iterate over each binary file and compare the actual to the expected output.
+
+Now, we can add more test cases without touching the source code:
+```bash
+$ go test -v -run=TestGetBase64Encoding
+=== RUN   TestGetBase64Encoding
+=== RUN   TestGetBase64Encoding/iphone
+=== RUN   TestGetBase64Encoding/android
+--- PASS: TestGetBase64Encoding (0.00s)
+    --- PASS: TestGetBase64Encoding/iphone (0.00s)
+    --- PASS: TestGetBase64Encoding/android (0.00s)
+PASS
+ok      github.com/favtuts/unit-testing 0.004s
+```
