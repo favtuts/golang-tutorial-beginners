@@ -155,3 +155,67 @@ func TestMyFunction(t *testing.T) {
 ```
 
 In this example, we create a mock object for the `MyInterface` interface and then use the `EXPECT` method to record the expected calls to the mock object. We then use the `Return` method to specify the behavior of each call. Finally, we call the code under test and use the `AssertExpectationsWereMet` method to verify that the expected calls were made.
+
+# Mocking interfaces in Go with GoMock
+
+Let's say we have the following code in your `apiclient_interface.go` file.
+```go
+package main
+
+// 👇 an interface acting as API Client
+type ApiClient interface {
+	GetData() string
+}
+
+// 👇 a function using the ApiClient interface
+func Process(client ApiClient) int {
+	data := client.GetData()
+	return len(data)
+}
+```
+
+In the above piece of code we have an interface `ApiClient` that is being used by the `Process` function. Lets say we want to test the `Process` function and we require a mock implementation of `ApiClient` when doing so.
+
+To generate mock implementation of `ApiClient` run the following code in the project root:
+```bash
+$ mockgen -source=apiclient_interface.go -destination=mocks/apiclient_interface.go
+```
+
+This will generate a mock implementation of the interfaace `ApiClient` and write the code into `mocks/apiclient_interface.go` file.
+
+Create a new file called `apiclient_test.go` and add the following code:
+```go
+package main
+
+import (
+	"testing"
+
+	mock_main "github.com/favtuts/gomock-testing/mocks"
+	"github.com/golang/mock/gomock"
+)
+
+func TestApiClientProcess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	// 👇 create new mock client
+	mockApiClient := mock_main.NewMockApiClient(ctrl)
+
+	// 👇 configure our mock `GetData` function to return mock data
+	mockApiClient.EXPECT().GetData().Return("Hello World")
+
+	length := Process(mockApiClient)
+
+	if length != 11 {
+		t.Fatalf("want: %d, got: %d\n", 11, length)
+	}
+}
+```
+
+Run the test:
+```bash
+$ go test -v -run=TestApiClientProcess
+=== RUN   TestApiClientProcess
+--- PASS: TestApiClientProcess (0.00s)
+PASS
+ok      github.com/favtuts/gomock-testing       0.002s
+```
