@@ -114,3 +114,44 @@ PASS
 ok      github.com/favtuts/gomock-testing       0.003s
 ```
 
+# Recording calls to a mock object
+
+GoMock allows you to record the calls made to a mock object and set expectations on the behavior of those calls. This can be useful for verifying that your code is interacting with the mock object correctly.
+
+To record the calls made to a mock object using GoMock, you need to create a new `gomock.Call` object for each method call you want to record. You can then use the Do method of the `gomock.Call` object to specify the behavior that should occur when the method is called.
+
+Here’s an example code snippet that illustrates how to record calls to a mock object using GoMock:
+```go
+import (
+    "testing"
+
+    "github.com/golang/mock/gomock"
+)
+
+func TestMyFunction(t *testing.T) {
+    // Create a new controller
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    // Create a mock object for the MyInterface interface
+    mockObj := NewMockMyInterface(ctrl)
+
+    // Record the expected calls to the mock object
+    call1 := mockObj.EXPECT().MyMethod1()
+    call2 := mockObj.EXPECT().MyMethod2("arg1", "arg2")
+
+    // Set expectations on the behavior of the calls
+    call1.Return(nil)
+    call2.Return("result", nil)
+
+    // Call the code under test
+    myFunction(mockObj)
+
+    // Verify that the expected calls were made
+    if err := mockObj.AssertExpectationsWereMet(); err != nil {
+        t.Errorf("Unexpected error: %v", err)
+    }
+}
+```
+
+In this example, we create a mock object for the `MyInterface` interface and then use the `EXPECT` method to record the expected calls to the mock object. We then use the `Return` method to specify the behavior of each call. Finally, we call the code under test and use the `AssertExpectationsWereMet` method to verify that the expected calls were made.
