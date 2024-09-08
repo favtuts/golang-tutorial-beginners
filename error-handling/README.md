@@ -325,3 +325,55 @@ func main() {
         fmt.Println(err)
 }
 ```
+
+# Error wrapping
+
+Previously, error wrapping in Go was only accessible via packages like `pkg/errors`. However, [Go v1.13 introduced support for error wrapping](https://go.dev/doc/go1.13).
+
+To create wrapped errors, `fmt.Errorf` has a `%w` verb, and for inspecting and unwrapping errors, a couple of functions have been added to the `error` package.
+
+`errors.Unwrap` basically inspects and exposes the underlying errors in a program. It returns the result of calling the `Unwrap` method on `Err` if `Err`’s type contains an `Unwrap` method returning an error. Otherwise, `Unwrap` returns nil:
+```go
+package errors
+
+type Wrapper interface{
+    Unwrap() error
+}
+```
+
+Below is an example implementation of the `Unwrap` method:
+```go
+func(e*PathError) Unwrap() error{
+    return e.Err
+}
+```
+
+With the `errors.Is` function, you can compare an error value against the sentinel value. Instead of comparing the sentinel value to one error, this function compares it to every error in the error chain. It also implements an `Is` method on an error so that an error can post itself as a sentinel even though it’s not a sentinel value:
+```go
+func Is(err, target error) bool
+```
+
+In the basic implementation above, `Is` checks and reports if `err` or any of the `errors` in its chain are equal to the target, the sentinel value.
+
+The `errors.As` function provides a way to cast to a specific error type. It looks for the first error in the error chain that matches the sentinel value, and if found, it sets the sentinel value to that error value, returning `true`:
+```go
+package main
+
+import (
+        "errors"
+        "fmt"
+        "os"
+)
+
+func main() {
+        if _, err := os.Open("non-existing"); err != nil {
+                var pathError *os.PathError
+                if errors.As(err, &pathError) {
+                        fmt.Println("Failed at path:", pathError.Path)
+                } else {
+                        fmt.Println(err)
+                }
+        }
+
+}
+```
