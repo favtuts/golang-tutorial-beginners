@@ -70,3 +70,60 @@ func main() {
   }
 }
 ```
+
+# Type conversion in Go
+
+Type conversion is simply changing a value from one type to another, but in Go there is a caveat, which is that types can only be converted between related or similar types. Let’s look at an example:
+```go
+// type-conversion.go
+
+package main
+
+import (
+  "fmt"
+  "strings"
+)
+
+type myString string
+
+func (m myString) capitalize() myString {
+    capStr := strings.ToUpper(string(m))
+
+    return myString(capStr)
+}
+
+func main() {
+    fmt.Println("Hello World!")
+
+    var m myString = "test"
+
+    fmt.Println(m.capitalize())
+}
+```
+
+In our example above, we have defined a type `myString` using the basic type `string`. This means that `myString` inherits the data structure of `string`, but we can give it its own methods that type `string` will not have, like the method `capitalize` in our example.
+
+We can also see in our example that we were able to convert our type `myString` to `string` and convert `string` to `myString`. This is because they share similar data structures.
+
+Another example of types that can be converted explicitly (without using any special tricks or libraries) is `int` to `float64` and vice versa. Here’s a simple example:
+```go
+// type-conversion-int.go
+
+package main
+
+import "fmt"
+
+func main() {
+  var simpleInt int = 3
+
+  var simpleFloat float64 = 4.5
+
+  // fmt.Println("This will throw an error: ", simpleInt + simpleFloat)
+
+  fmt.Println("This will work correctly: ", simpleInt + int(simpleFloat))
+
+  fmt.Println("This will work correctly too: ", float64(simpleInt) + simpleFloat)
+}
+```
+
+In our example above, we were able to convert between `int` and `float64` explicitly, just as we could between `myString` and `string`, because they both have similar data structures — but we cannot convert `string` to `int`.
