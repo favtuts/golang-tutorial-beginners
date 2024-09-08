@@ -578,3 +578,62 @@ func TestGenerateTable(t *testing.T) {
 ```
 
 The test above captures the output of the `generateTable()` function in a buffer of bytes. Then, it passes the contents of the buffer to the `Assert()` method on the `goldie` instance. The contents on the buffer will be compared to the contents of the `books.golden` file in the `testdata` directory.
+
+Initially, running the test will fail because we have not created the `books.golden` file yet:
+```bash
+$ go test -v -run=TestGenerateTable
+=== RUN   TestGenerateTable
+    books_golden_test.go:21: Golden fixture not found. Try running with -update flag.
+--- FAIL: TestGenerateTable (0.00s)
+FAIL
+exit status 1
+FAIL    github.com/favtuts/unit-testing 0.003s
+```
+
+The error message suggests that we add the `-update `flag, which will create the `books.golden` file with the contents of the buffer:
+```bash
+$ go test -v -update -run=TestGenerateTable
+=== RUN   TestGenerateTable
+--- PASS: TestGenerateTable (0.00s)
+PASS
+ok      github.com/favtuts/unit-testing 0.003s
+```
+
+On subsequent runs, we should remove the `-update` flag so that our golden file is not continually updated.
+
+Any changes to the template should cause the test to fail. For example, if you update the price field to Euros (`€`) instead of USD (`$`), you’ll immediately receive an error. These errors occur because the output of the `generateTable()` function no longer matches the contents of the golden file.
+
+Goldie provides diffing capabilities to help you spot the change when these errors occur:
+```bash
+$ go test -v -run=TestGenerateTable
+=== RUN   TestGenerateTable
+    books_golden_test.go:21: Result did not match the golden fixture. Diff is below:
+        
+        --- Expected
+        +++ Actual
+        @@ -18,3 +18,3 @@
+               <td>1990</td>
+        -      <td>$12</td>
+        +      <td>€12</td>
+             </tr><tr>
+        @@ -25,3 +25,3 @@
+               <td>2013</td>
+        -      <td>$10</td>
+        +      <td>€10</td>
+             </tr><tr>
+        @@ -32,3 +32,3 @@
+               <td>2016</td>
+        -      <td>$18</td>
+        +      <td>€18</td>
+             </tr>
+        
+--- FAIL: TestGenerateTable (0.00s)
+FAIL
+exit status 1
+FAIL    github.com/favtuts/unit-testing 0.003s
+```
+
+In the output above, the change is clearly highlighted. These changes are deliberate, so we can make our test pass again by updating the golden file using the `-update` flag:
+```bash
+$ go test -v -update -run=TestGenerateTable
+```

@@ -16,6 +16,33 @@ type Book struct {
 	Price         int
 }
 
+var inventory = []Book{
+	{
+		Name:          "The Solitare Mystery",
+		Author:        "Jostein Gaarder",
+		Publisher:     "Farrar Straus Giroux",
+		Pages:         351,
+		PublishedYear: 1990,
+		Price:         12,
+	},
+	{
+		Name:          "Also Known As",
+		Author:        "Robin Benway",
+		Publisher:     "Walker Books",
+		Pages:         208,
+		PublishedYear: 2013,
+		Price:         10,
+	},
+	{
+		Name:          "Ego Is the Enemy",
+		Author:        "Ryan Holiday",
+		Publisher:     "Portfolio",
+		Pages:         226,
+		PublishedYear: 2016,
+		Price:         18,
+	},
+}
+
 var tmpl = `<table class="table">
   <thead>
     <tr>

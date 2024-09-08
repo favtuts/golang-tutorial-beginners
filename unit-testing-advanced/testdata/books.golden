@@ -1,0 +1,36 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Author</th>
+      <th>Publisher</th>
+      <th>Pages</th>
+      <th>Year</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The Solitare Mystery</td>
+      <td>Jostein Gaarder</td>
+      <td>Farrar Straus Giroux</td>
+      <td>351</td>
+      <td>1990</td>
+      <td>€12</td>
+    </tr><tr>
+      <td>Also Known As</td>
+      <td>Robin Benway</td>
+      <td>Walker Books</td>
+      <td>208</td>
+      <td>2013</td>
+      <td>€10</td>
+    </tr><tr>
+      <td>Ego Is the Enemy</td>
+      <td>Ryan Holiday</td>
+      <td>Portfolio</td>
+      <td>226</td>
+      <td>2016</td>
+      <td>€18</td>
+    </tr>
+  </tbody>
+</table>
