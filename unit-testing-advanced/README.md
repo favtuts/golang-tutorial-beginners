@@ -381,3 +381,200 @@ $ go test -v -run=TestGetBase64Encoding
 PASS
 ok      github.com/favtuts/unit-testing 0.004s
 ```
+
+# Using golden files
+
+If you’re using a Go template, it’s a good idea to test the generated output against the expected output to confirm that the template is working as intended. Go templates are usually large, so it’s not recommended to hard code the expected output in the source code as we’ve done so far in this tutorial.
+
+Let’s explore an alternative approach to Go templates that simplifies writing and maintaining a test throughout a project’s lifecycle.
+
+A golden file is a special type of file that contains the expected output of a test. The test function reads from the golden file, comparing its contents against a test’s expected output.
+
+In the following example, we’ll use an `html/template` to generate an HTML table that contains a row for each book in an inventory:
+```go
+type Book struct {
+    Name          string
+    Author        string
+    Publisher     string
+    Pages         int
+    PublishedYear int
+    Price         int
+}
+
+var tmpl = `<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Author</th>
+      <th>Publisher</th>
+      <th>Pages</th>
+      <th>Year</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range . }}<tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .Author }}</td>
+      <td>{{ .Publisher }}</td>
+      <td>{{ .Pages }}</td>
+      <td>{{ .PublishedYear }}</td>
+      <td>${{ .Price }}</td>
+    </tr>{{ end }}
+  </tbody>
+</table>
+`
+
+var tpl = template.Must(template.New("table").Parse(tmpl))
+
+func generateTable(books []Book, w io.Writer) error {
+    return tpl.Execute(w, books)
+}
+
+func main() {
+    books := []Book{
+        {
+            Name:          "The Odessa File",
+            Author:        "Frederick Forsyth",
+            Pages:         334,
+            PublishedYear: 1979,
+            Publisher:     "Bantam",
+            Price:         15,
+        },
+    }
+
+    err := generateTable(books, os.Stdout)
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+The `generateTable()` function above creates the HTML table from a slice of `Book` objects. The code above will produce the following output:
+
+```bash
+$ go run main.go
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Author</th>
+      <th>Publisher</th>
+      <th>Pages</th>
+      <th>Year</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The Odessa File</td>
+      <td>Frederick Forsyth</td>
+      <td>Bantam</td>
+      <td>334</td>
+      <td>1979</td>
+      <td>$15</td>
+    </tr>
+  </tbody>
+</table>
+```
+To test the function above, we’ll capture the actual outcome and compare it to the expected outcome. We’ll store the expected result in the `testdata` directory as we did in the previous section, however, we’ll have to make a few changes.
+
+Assume we have the following list of books in an inventory:
+```go
+var inventory = []Book{
+    {
+        Name:          "The Solitare Mystery",
+        Author:        "Jostein Gaarder",
+        Publisher:     "Farrar Straus Giroux",
+        Pages:         351,
+        PublishedYear: 1990,
+        Price:         12,
+    },
+    {
+        Name:          "Also Known As",
+        Author:        "Robin Benway",
+        Publisher:     "Walker Books",
+        Pages:         208,
+        PublishedYear: 2013,
+        Price:         10,
+    },
+    {
+        Name:          "Ego Is the Enemy",
+        Author:        "Ryan Holiday",
+        Publisher:     "Portfolio",
+        Pages:         226,
+        PublishedYear: 2016,
+        Price:         18,
+    },
+}
+```
+
+The expected output for this list of books will span across many lines, therefore, it is difficult to place it as a string literal inside of the source code:
+```html
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Author</th>
+      <th>Publisher</th>
+      <th>Pages</th>
+      <th>Year</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The Solitaire Mystery</td>
+      <td>Jostein Gaarder</td>
+      <td>Farrar Straus Giroux</td>
+      <td>351</td>
+      <td>1990</td>
+      <td>$12</td>
+    </tr>
+    <tr>
+      <td>Also Known As</td>
+      <td>Robin Benway</td>
+      <td>Walker Books</td>
+      <td>308</td>
+      <td>2013</td>
+      <td>$10</td>
+    </tr>
+    <tr>
+      <td>Ego Is The Enemy</td>
+      <td>Ryan Holiday</td>
+      <td>Portfolio</td>
+      <td>226</td>
+      <td>2016</td>
+      <td>$18</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+In addition to being practical for larger outputs, a golden file can be automatically updated and generated.
+
+While it’s possible to write a helper function to create and update golden files, we can take advantage of [goldie](https://github.com/sebdah/goldie), a utility that was created specifically for golden files.
+
+Install the latest version of goldie with the command below:
+```bash
+$ go get -u github.com/sebdah/goldie/v2
+```
+
+Let’s go ahead and use goldie in a test for the `generateTable()` function:
+```go
+func TestGenerateTable(t *testing.T) {
+    var buf bytes.Buffer
+
+    err := generateTable(inventory, &buf)
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    actual := buf.Bytes()
+
+    g := goldie.New(t)
+    g.Assert(t, "books", actual)
+}
+```
+
+The test above captures the output of the `generateTable()` function in a buffer of bytes. Then, it passes the contents of the buffer to the `Assert()` method on the `goldie` instance. The contents on the buffer will be compared to the contents of the `books.golden` file in the `testdata` directory.
