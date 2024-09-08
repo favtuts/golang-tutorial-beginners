@@ -150,3 +150,178 @@ runtime.main
 runtime.goexit
 	/home/tvt/.goenv/versions/1.22.4/src/runtime/asm_amd64.s:1695
 ```
+
+# Defer, panic, and recover
+
+Although Go doesn’t have exceptions, it has a similar type of mechanism known as [defer, panic, and recover](https://blog.golang.org/defer-panic-and-recover). Go’s ideology is that adding exceptions like the `try/catch/finally` statement in JavaScript would result in complex code and encourage programmers to label too many basic errors, like failing to open a file, as exceptional.
+
+`Defer` is a language mechanism that puts your function call into a stack. Each deferred function is executed in reverse order when the host function finishes, regardless of whether a `panic` is called or not. The `defer` mechanism is very useful for cleaning up resources:
+```go
+package main
+
+import (
+        "fmt"
+)
+
+func A() {
+        defer fmt.Println("Keep calm!")
+        B()
+}
+func B() {
+        defer fmt.Println("Else...")
+        C()
+}
+func C() {
+        defer fmt.Println("Turn on the air conditioner...")
+        D()
+}
+func D() {
+        defer fmt.Println("If it's more than 30 degrees...")
+}
+func main() {
+        A()
+}
+```
+
+The code above would compile as follows:
+```bash
+If it's more than 30 degrees...
+Turn on the air conditioner...
+Else...
+Keep calm!
+```
+
+`panic` is a built-in function that stops the normal execution flow. When you call `panic` in your code, it means you’ve decided that your caller can’t solve the problem. Therefore, you should use `panic` only in rare cases where it’s not safe for your code or anyone integrating your code to continue at that point.
+
+The code sample below demonstrates how `panic` works:
+```go
+package main
+
+import (
+        "errors"
+        "fmt"
+)
+
+func A() {
+        defer fmt.Println("Then we can't save the earth!")
+        B()
+}
+func B() {
+        defer fmt.Println("And if it keeps getting hotter...")
+        C()
+}
+func C() {
+        defer fmt.Println("Turn on the air conditioner...")
+        Break()
+}
+func Break() {
+        defer fmt.Println("If it's more than 30 degrees...")
+        panic(errors.New("Global Warming!!!"))
+
+}
+func main() {
+        A()
+}
+```
+
+The sample above would compile as follows:
+```bash
+If it's more than 30 degrees...
+Turn on the air conditioner...
+And if it keeps getting hotter...
+Then we can't save the earth!
+panic: Global Warming!!!
+
+goroutine 1 [running]:
+main.Break()
+        /home/tvt/go-projects/golang-tutorial-beginners/error-handling/panic_example.go:22 +0x90
+main.C2()
+        /home/tvt/go-projects/golang-tutorial-beginners/error-handling/panic_example.go:18 +0x65
+main.B2()
+        /home/tvt/go-projects/golang-tutorial-beginners/error-handling/panic_example.go:14 +0x65
+main.A2()
+        /home/tvt/go-projects/golang-tutorial-beginners/error-handling/panic_example.go:10 +0x65
+main.main()
+        /home/tvt/go-projects/golang-tutorial-beginners/error-handling/main.go:16 +0x145
+exit status 2
+```
+
+As shown above, when `panic` is used and not handled, the execution flow stops, all deferred functions are executed in reverse order, and stack traces are printed.
+
+You can use the built-in `recover` function to handle `panic` and return the values passed from a panic call. `recover` must always be called in a `defer` function, otherwise, it will return `nil`:
+```go
+package main
+
+import (
+        "errors"
+        "fmt"
+)
+
+func A() {
+        defer fmt.Println("Then we can't save the earth!")
+        defer func() {
+                if x := recover(); x != nil {
+                        fmt.Printf("Panic: %+v\n", x)
+                }
+        }()
+        B()
+}
+func B() {
+        defer fmt.Println("And if it keeps getting hotter...")
+        C()
+}
+func C() {
+        defer fmt.Println("Turn on the air conditioner...")
+        Break()
+}
+func Break() {
+        defer fmt.Println("If it's more than 30 degrees...")
+        panic(errors.New("Global Warming!!!"))
+
+}
+func main() {
+        A()
+}
+```
+
+As you can see in the code sample above, recover prevents the entire execution flow from coming to a halt. We added in a panic function, so the compiler would return the following:
+```bash
+If it's more than 30 degrees...
+Turn on the air conditioner...
+And if it keeps getting hotter...
+Panic: Global Warming!!!
+Then we can't save the earth!
+```
+
+To report an error as a return value, you have to call the `recover` function in the same goroutine as where the `panic` function is called, retrieve an error struct from the `recover` function, and pass it to a variable:
+```go
+package main
+
+import (
+        "errors"
+        "fmt"
+)
+
+func saveEarth() (err error) {
+
+        defer func() {
+                if r := recover(); r != nil {
+                        err = r.(error)
+                }
+        }()
+        TooLate()
+        return
+}
+func TooLate() {
+        A()
+        panic(errors.New("Then there's nothing we can do"))
+}
+
+func A() {
+        defer fmt.Println("If it's more than 100 degrees...")
+}
+func main() {
+        err := saveEarth()
+        fmt.Println(err)
+}
+```
