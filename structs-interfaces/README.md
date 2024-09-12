@@ -30,3 +30,69 @@ Run the main function
 $ go run .
 Hello, Go
 ```
+
+# What are structs in Go?
+
+Let’s say we have a blog post that we intend to publish. Using a struct type to represent the data fields would look like this:
+```go
+type blogPost struct {
+  author  string    // field
+  title   string    // field  
+  postId  int       // field
+}
+```
+
+Now, to instantiate or initialize the struct using a literal, we can do the following:
+```go
+package main
+
+import "fmt"
+
+type blogPost struct {
+  author  string
+  title   string
+  postId  int  
+}
+
+func NewBlogPost() *blogPost {
+        return &blogPost{
+                author: "Alexander",
+                title:  "Learning structs and interfaces in Go",
+                postId: 4555,
+        }
+
+}
+
+func main() {
+        var b blogPost // initialize the struct type
+
+        fmt.Println(b) // print the zero value    
+
+        newBlogPost := *NewBlogPost()
+        fmt.Println(newBlogPost)
+
+        // alternatively
+        b = blogPost{ //
+        author: "Alex",
+        title: "Understand struct and interface types",
+        postId: 12345,
+        }
+
+        fmt.Println(b)        
+
+}
+
+//output
+{Alexander Learning structs and interfaces in Go 4555}
+{  0}  // zero values of the struct type is shown
+{Alex Understand struct and interface types 12345}
+```
+
+Run the code:
+```bash
+$ go run .
+
+{  0}
+{Alexander Learning structs and interfaces in Go 4555}
+{Alex Understand struct and interface types 12345}
+```
