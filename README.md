@@ -17,3 +17,4 @@ Collect all tutorials for Begginers
 * [Explore Go mocking methods](./gomock-testing/README.md)
 * [Error handling Best practices](./error-handling/README.md)
 * [Type assertions and Type conversions](./type-assertion-convertion/README.md)
+* [Explorer structs and interfaces](./structs-interfaces/README.md)
