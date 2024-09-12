@@ -31,3 +31,16 @@ func demo_init_struct_use_literal() {
 	}
 	fmt.Println(b)
 }
+
+func demo_access_struct_fields_use_dot() {
+	var b blogPost // b is a type Alias for the BlogPost
+	b.author = "Alex"
+	b.title = "understand structs and interface types"
+	b.postId = 12345
+
+	fmt.Println(b)
+
+	b.author = "Chinedu" // since everything is pass by value by default in Go, we can update this field after initializing - see pointer types later
+
+	fmt.Println("Updated Author's name is: ", b.author)
+}
