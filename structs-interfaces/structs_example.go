@@ -44,3 +44,35 @@ func demo_access_struct_fields_use_dot() {
 
 	fmt.Println("Updated Author's name is: ", b.author)
 }
+
+func demo_init_struct_use_short_literal() {
+	b := blogPost{"Alex", "understand struct and interface type", 12345}
+	fmt.Println(b)
+}
+
+func demo_init_inline_struct() {
+	// inline struct init
+	b := struct {
+		author string
+		title  string
+		postId int
+	}{
+		author: "Alex",
+		title:  "understand struct and interface type",
+		postId: 12345,
+	}
+
+	fmt.Println(b)
+}
+
+func demo_init_struct_use_new_keyword() {
+	b := new(blogPost)
+
+	fmt.Println(b)
+
+	b.author = "Alex"
+	b.title = "understand interface and struct type in Go"
+	b.postId = 12345
+
+	fmt.Println(*b) // dereference the pointer
+}
