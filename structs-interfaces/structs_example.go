@@ -8,6 +8,11 @@ type blogPost struct {
 	postId int    // field
 }
 
+type Author struct {
+	firstName, lastName, Biography string
+	photoId                        int
+}
+
 func NewBlogPost() *blogPost {
 	return &blogPost{
 		author: "Alexander",
@@ -75,4 +80,16 @@ func demo_init_struct_use_new_keyword() {
 	b.postId = 12345
 
 	fmt.Println(*b) // dereference the pointer
+}
+
+func demo_init_struct_use_pointers() {
+	b := &blogPost{
+		author: "Alex",
+		title:  "understand structs and interface types",
+		postId: 12345,
+	}
+
+	fmt.Println(*b) // dereference the pointer value
+
+	fmt.Println("Author's name", b.author) // in this case Go would handle the dereferencing on our behalf
 }

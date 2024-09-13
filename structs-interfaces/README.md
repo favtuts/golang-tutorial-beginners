@@ -228,3 +228,39 @@ Hello, Go
 Note that as we can see from the output, by using the `new` keyword, we allocate storage for the variable, `b` , which then initializes the zero values of our struct fields — in this case `(author="", title="", postId=0)`.
 
 This then returns a pointer type, `*b`, containing the address of the above variables in memory.
+
+
+# Golang pointer to a struct
+
+We can initialize struct using pointers:
+```go
+package main
+
+import "fmt"
+
+type blogPost struct {
+  author  string
+  title   string
+  postId  int  
+}
+
+func main() {
+        b := &blogPost{
+                author:"Alex",
+                title: "understand structs and interface types",
+                postId: 12345,
+                }
+
+        fmt.Println(*b)   // dereference the pointer value 
+
+       fmt.Println("Author's name", b.author) // in this case Go would handle the dereferencing on our behalf
+}
+```
+
+Run the code:
+```bash
+$ go run .
+
+{Alex understand structs and interface types 12345}
+Author's name Alex
+```
