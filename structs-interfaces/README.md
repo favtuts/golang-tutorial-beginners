@@ -343,3 +343,137 @@ func main() {
 Alex
 {{Alex Nnakwue I am a lazy engineer 234333} understand interface and struct type in Go 12345 true}
 ```
+
+# What are method sets in Golang?
+
+Methods in Go are special kinds of functions with a receiver.
+
+A method set of a type, `T`, that consists of all methods declared with receiver types, `T`. Note that the receiver is specified via an extra parameter preceding the method name.
+
+In Go, we can create a type with a behavior by defining a method on that type. In essence, a method set is a list of methods that a type must have to implement an interface. Let’s look at an example:
+
+```go
+// BlogPost struct with fields defined
+type BlogPost struct {
+  author  string
+  title   string
+  postId  int  
+}
+
+// Create a BlogPost type called (under) Technology
+type Technology BlogPost
+```
+
+Methods can also be defined on other named types:
+```go
+// write a method that publishes a blogPost - accepts the Technology type as a pointer receiver
+func (t *Technology) Publish() {
+    fmt.Printf("The title on %s has been published by %s, with postId %d\n" , t.title, t.author, t.postId)
+}
+
+// alternatively similar to the above, if we choose not to define a new type 
+func (b *BlogPost) Publish() {
+    fmt.Printf("The title on %s has been published by %s, with postId %d\n" , t.title, b.author, b.postId)
+}
+
+// Create an instance of the type
+t := Technology{"Alex","understand structs and interface types",12345}
+
+// Publish the BlogPost -- This method can only be called on the Technology type
+t.Publish()
+
+// output
+The title on understand structs and interface types has been published by Alex, with postId 12345
+```
+
+
+# What is a Golang interface?
+
+As we mentioned in the last section, method sets add behavior to one or more types. However, interface types define one or more method sets.
+
+A type, therefore, is said to implement an interface by implementing its methods. In that light, interfaces enable us to compose custom types that have a common behavior.
+
+Method sets are basically method lists that a type must have for that type to implement that interface.
+
+In Go, interfaces are implicit. This means that if every method belonging to the method set of an interface type is implemented by a type, then that type is said to implement the interface. To declare an interface:
+```go
+type Publisher interface {
+    publish()  error
+}
+```
+
+In the `publish()` interface method we set above, if a type (for example, a struct) implements the method, then we can say the type implements the interface. Let’s define a method that accepts a struct type `blogpost` below:
+```go
+func (b blogPost) publish() error {
+   fmt.Println("The title has been published by ", b.author)
+   return nil
+}
+```
+
+Now to implement the interface:
+```go
+package main
+
+import "fmt"
+
+// interface definition
+type Publisher interface {
+     Publish()  error
+}
+
+type blogPost struct {
+  author  string
+  title   string
+  postId  int  
+}
+
+// method with a value receiver
+func (b blogPost) Publish() error {
+   fmt. Printf("The title on %s has been published by %s, with postId %d\n" , b.title, b.author, b.postId)
+   return nil
+}
+
+ func test(){
+
+  b := blogPost{"Alex","understanding structs and interface types",12345}
+
+  fmt.Println(b.Publish())
+
+   d := &b   // pointer receiver for the struct type
+
+   b.author = "Chinedu"
+
+
+   fmt.Println(d.Publish())
+
+}
+
+
+func main() {
+
+        var p Publisher
+
+        fmt.Println(p)
+
+        p = blogPost{"Alex","understanding structs and interface types",12345}
+
+        fmt.Println(p.Publish())
+
+        test()  // call the test function 
+
+}
+
+//output
+<nil>
+The title on understanding structs and interface types has been published by Alex, with postId 12345
+<nil>
+The title on understanding structs and interface types has been published by Alex, with postId 12345
+<nil>
+The title on understanding structs and interface types has been published by Chinedu, with postId 12345
+<nil>
+```
+
+We can also alias interface types like this:
+```go
+type publishPost Publisher  // alias to the interface defined above - mostly suited for third-party interfaces
+```
