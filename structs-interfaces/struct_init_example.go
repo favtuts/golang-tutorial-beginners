@@ -8,11 +8,6 @@ type blogPost struct {
 	postId int    // field
 }
 
-type Author struct {
-	firstName, lastName, Biography string
-	photoId                        int
-}
-
 func NewBlogPost() *blogPost {
 	return &blogPost{
 		author: "Alexander",
