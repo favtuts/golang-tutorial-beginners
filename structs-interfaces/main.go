@@ -12,7 +12,8 @@ func main() {
 	//demo_init_struct_use_pointers()
 	//demo_nested_struct_fields()
 	//demo_promoted_struct_fields()
-	demo_publisher_interafce_testing()
-	demo_interface_type_testing()
-	demo_interface_type_function_argument()
+	//demo_publisher_interafce_testing()
+	//demo_interface_type_testing()
+	//demo_interface_type_function_argument()
+	demo_interface_to_struct_convert()
 }

@@ -477,3 +477,42 @@ We can also alias interface types like this:
 ```go
 type publishPost Publisher  // alias to the interface defined above - mostly suited for third-party interfaces
 ```
+
+
+# Convert an interface to a struct in Golang
+
+From Effective Go, to cast an interface to a struct, we can make use of the syntax notation below:
+```go
+v = x.(T)
+```
+
+Here, `x` is the interface type and `T` is the actual concrete type. In essence, `T` must implement the interface type of `x`.
+
+To check for correctness and avoid a type mismatch, we can go further and make use of the syntax notation below:
+```go
+v, ok = x.(T)
+```
+In this case, the value of `ok` is true if the assertion holds. 
+
+Let’s see a trivial example of using type assertions to work with both structs and interfaces below:
+```go
+package main
+
+import "fmt"
+
+type blogPost struct {
+        Data interface{}
+        postId int
+}
+
+func NewBlogPostStruct() interface{} {
+        return &blogPost{postId: 1234, Data: "Alexander"}
+}
+
+func main() {
+        blogPost := NewBlogPostStruct().(*blogPost)
+        fmt.Println(blogPost.Data)
+}
+//returns
+Alexander
+```
