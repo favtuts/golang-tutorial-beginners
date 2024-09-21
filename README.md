@@ -19,3 +19,4 @@ Collect all tutorials for Begginers
 * [Type assertions and Type conversions](./type-assertion-convertion/README.md)
 * [Explorer structs and interfaces](./structs-interfaces/README.md)
 * [Understanding Go generics](./go-generics/README.md)
+* [JWT Authentication in Go](./jwt-go-example/)
