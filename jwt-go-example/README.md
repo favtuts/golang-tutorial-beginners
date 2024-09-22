@@ -147,3 +147,58 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 
 If a user logs in with the correct credentials, this handler will then set a cookie on the client side with the JWT value. Once a cookie is set on a client, it is sent along with every request henceforth. Now we can write our welcome handler to handle user specific information.
 
+
+# Handling Post Authentication Routes
+
+Now that all logged in clients have session information stored on their end as cookies, we can use it to:
+
+* Authenticate subsequent user requests
+* Get information about the user making the request
+
+Let’s write our `Welcome` handler to do just that:
+```go
+func Welcome(w http.ResponseWriter, r *http.Request) {
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// If the cookie is not set, return an unauthorized status
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// For any other type of error, return a bad request status
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get the JWT string from the cookie
+	tknStr := c.Value
+
+	// Initialize a new instance of `Claims`
+	claims := &Claims{}
+
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (any, error) {
+		return jwtKey, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !tkn.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	// Finally, return the welcome message to the user, along with their
+	// username given in the token
+	w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
+}
+```
+
