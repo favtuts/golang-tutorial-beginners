@@ -186,5 +186,9 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	// immediately clear the token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Expires: time.Now(),
+	})
 }

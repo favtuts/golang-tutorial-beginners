@@ -267,3 +267,48 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 ```
+
+# Handling Logout
+
+Logging out can be tricky when it comes to JWT-based authentication, since our application is meant to be stateless - meaning we don’t store any information about issued JWT tokens on our server.
+
+This is why the recommended way to handle logout is to provide tokens with a short expiry time, and require the client to keep refreshing the token. This way, we can ensure that for an expiry period `T`, the maximum time a user can stay logged in without the applications explicit permission is `T` seconds.
+
+Another option we have is to create a `/logout` route that clears the users token cookie, so that subsequent requests would be unauthenticated:
+
+```go
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// immediately clear the token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Expires: time.Now(),
+	})
+}
+```
+
+# Running Our Application
+
+To run this application, build and run the Go binary:
+```bash
+$ go build
+$ ./jwt-go-example
+```
+
+Now, using any HTTP client with support for cookies (like Postman, or your web browser) make a sign-in request with the appropriate credentials:
+```bash
+POST http://localhost:8000/signin
+
+{"username":"user1","password":"password1"}
+```
+
+You can now try hitting the welcome route from the same client to get the welcome message:
+```bash
+$ GET http://localhost:8000/welcome
+
+Welcome user1!
+```
+
+Hit the refresh route, and then inspect the clients cookies to see the new value of the `token` cookie:
+```bash
+POST http://localhost:8000/refresh
+```
