@@ -231,3 +231,54 @@ This will give us the following output:
 ```bash
 found bird: {Species:pigeon Description:common in cities}
 ```
+
+If we want to query multiple rows, we can use the `Query` method, which returns a [Rows](https://pkg.go.dev/database/sql#Rows) instance instead of a single row like the previous example.
+```go
+rows, err := db.Query("SELECT bird, description FROM birds limit 10")
+if err != nil {
+	log.Fatalf("could not execute query: %v", err)
+}
+// create a slice of birds to hold our results
+birds := []Bird{}
+
+// iterate over the returned rows
+// we can go over to the next row by calling the `Next` method, which will
+// return `false` if there are no more rows
+for rows.Next() {
+	bird := Bird{}
+	// create an instance of `Bird` and write the result of the current row into it
+	if err := rows.Scan(&bird.Species, &bird.Description); err != nil {
+		log.Fatalf("could not scan row: %v", err)
+	}
+	// append the current instance to the slice of birds
+	birds = append(birds, bird)
+}
+// print the length, and all the birds
+fmt.Printf("found %d birds: %+v", len(birds), birds)
+```
+
+Output:
+```bash
+found 2 birds: [{Species:pigeon Description:common in cities} {Species:eagle Description:bird of prey}]
+```
+
+# Adding Query Parameters
+
+We can use the `Query` and `QueryRow` methods to add variables in our code as query parameters. To illustrate, let’s add a `WHERE` clause to get information about the eagle:
+```go
+birdName := "eagle"
+// For Postgres, parameters are specified using the "$" symbol, along with the index of
+// the param. Variables should be added as arguments in the same order
+// The sql library takes care of converting types from Go to SQL based on the driver
+row := db.QueryRow("SELECT bird, description FROM birds WHERE bird = $1 LIMIT $2", birdName, 1)
+
+// the code to scan the obtained row is the same as before
+//...
+```
+
+Note: The symbols used for query params depends on the database you’re using. For example, we have to use the `?` symbol in MySQL instead of `$` which is specific to Postgres.
+
+Output:
+```bash
+found bird: {Species:eagle Description:bird of prey}
+```
