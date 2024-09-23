@@ -35,7 +35,8 @@ func main() {
 
 	// queryRow(db)
 	// queryRows(db)
-	queryWithParameters(db)
+	// queryWithParameters(db)
+	insertRow(db)
 }
 
 func queryRow(db *sql.DB) {
@@ -99,4 +100,29 @@ func queryWithParameters(db *sql.DB) {
 	}
 	fmt.Printf("found bird: %+v\n", bird)
 
+}
+
+func insertRow(db *sql.DB) {
+	// sample data that we want to insert
+	newBird := Bird{
+		Species:     "rooster",
+		Description: "wakes you up in the morning",
+	}
+	// the `Exec` method returns a `Result` type instead of a `Row`
+	// we follow the same argument pattern to add query params
+	result, err := db.Exec("INSERT INTO birds (bird, description) VALUES ($1, $2)", newBird.Species, newBird.Description)
+	if err != nil {
+		log.Fatalf("could not insert row: %v", err)
+	}
+
+	// the `Result` type has special methods like `RowsAffected` which returns the
+	// total number of affected rows reported by the database
+	// In this case, it will tell us the number of rows that were inserted using
+	// the above query
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Fatalf("could not get affected rows: %v", err)
+	}
+	// we can log how many rows were inserted
+	fmt.Println("inserted", rowsAffected, "rows")
 }

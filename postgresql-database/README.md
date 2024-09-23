@@ -282,3 +282,38 @@ Output:
 ```bash
 found bird: {Species:eagle Description:bird of prey}
 ```
+
+# Executing Writes – INSERT, UPDATE, and DELETE
+
+When we do writing to a database, it will returns the number of rows affected.
+
+With the `sql` library, we can make use of the `Exec` method to execute write queries. Let’s see how we can use this to insert a new entry into the `birds` table:
+```go
+// sample data that we want to insert
+newBird := Bird{
+	Species:     "rooster",
+	Description: "wakes you up in the morning",
+}
+// the `Exec` method returns a `Result` type instead of a `Row`
+// we follow the same argument pattern to add query params
+result, err := db.Exec("INSERT INTO birds (bird, description) VALUES ($1, $2)", newBird.Species, newBird.Description)
+if err != nil {
+	log.Fatalf("could not insert row: %v", err)
+}
+
+// the `Result` type has special methods like `RowsAffected` which returns the
+// total number of affected rows reported by the database
+// In this case, it will tell us the number of rows that were inserted using
+// the above query
+rowsAffected, err := result.RowsAffected()
+if err != nil {
+	log.Fatalf("could not get affected rows: %v", err)
+}
+// we can log how many rows were inserted
+fmt.Println("inserted", rowsAffected, "rows")
+```
+
+Output:
+```bash
+inserted 1 rows
+```
