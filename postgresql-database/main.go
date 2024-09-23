@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	// Importing pgx v5 for PostgreSQL database operations. The pgx package is used
 	// directly for database connection and operations, replacing the standard database/sql package.
@@ -26,6 +27,15 @@ func main() {
 		log.Fatalf("could not connect to database: %v", err)
 	}
 
+	// Maximum Idle Connections
+	db.SetMaxIdleConns(5)
+	// Maximum Open Connections
+	db.SetMaxOpenConns(10)
+	// Idle Connection Timeout
+	db.SetConnMaxIdleTime(1 * time.Second)
+	// Connection Lifetime
+	db.SetConnMaxLifetime(30 * time.Second)
+
 	// To verify the connection to our database instance, we can call the `Ping`
 	// method with a context. If no error is returned, we can assume a successful connection
 	if err := db.PingContext(context.Background()); err != nil {
@@ -37,7 +47,8 @@ func main() {
 	// queryRows(db)
 	// queryWithParameters(db)
 	// insertRow(db)
-	executePreparedStatement(db)
+	// executePreparedStatement(db)
+	queryCancellation(db)
 }
 
 func queryRow(db *sql.DB) {
@@ -143,4 +154,20 @@ func executePreparedStatement(db *sql.DB) {
 		log.Fatal(err)
 	}
 	fmt.Printf("result: %+v", bird)
+}
+
+func queryCancellation(db *sql.DB) {
+	// create a parent context
+	ctx := context.Background()
+	// create a context from the parent context with a 300ms timeout
+	ctx, _ = context.WithTimeout(ctx, 300*time.Millisecond)
+	// The context variable is passed to the `QueryContext` method as
+	// the first argument
+	// the pg_sleep method is a function in Postgres that will halt for
+	// the provided number of seconds. We can use this to simulate a
+	// slow query
+	_, err := db.QueryContext(ctx, "SELECT * from pg_sleep(1)")
+	if err != nil {
+		log.Fatalf("could not execute query: %v", err)
+	}
 }

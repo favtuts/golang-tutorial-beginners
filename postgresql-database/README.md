@@ -31,6 +31,20 @@ $ go run .
 Hello, Go
 ```
 
+# The “database/sql” Standard Library
+
+
+The [`database/sql`](https://pkg.go.dev/database/sql@go1.17.1) is the standard library package used for interacting with SQL databases in Go.
+
+This package gives us a common interface that can be used to connect and query different types of databases. This interface is implemented by the [driver for each database type](https://github.com/golang/go/wiki/SQLDrivers):
+
+![db-driver-architecture](./images/db-driver-architecture.png)
+
+
+Our application code uses the interface provided by the `database/sql` standard library. The driver implements this interface to undertake the actual interaction with the database.
+
+This means that we can use the same interface for interacting with a number of popular databases. Let’s see how we can make use of a driver for connecting to a [PostgreSQL database](https://www.postgresql.org/).
+
 # Installing the Database Driver
 
 We’ll be using the [pgx](https://github.com/jackc/pgx/wiki/Getting-started-with-pgx-through-database-sql#getting-started-with-pgx-through-databasesql) driver
@@ -353,3 +367,79 @@ Output:
 ```bash
 result: {Species:eagle Description:bird of prey}
 ```
+
+# Connection Pooling - Timeouts and Max/Idle Connections
+
+This section will go over how to best manage the network connections that we open to our database server.
+
+The database server exists as a separate process from our Go application. All queries that we execute have to go over a TCP connection that we open with the database.
+
+![open_db_connection](./images/db-connection.png)
+
+For production applications, we can have a “pool” of simultaneous connections made to the database server. This allows us to run multiple queries concurrently.
+
+There are various options that we can use to configure the database connection pool in our application:
+
+* **Maximum Open Connections** are the maximum number of parallel connections that can be made to the database at any time.
+* **Maximum Idle Connections** are the maximum number of connections that can be inactive at any time. A connection is idle, if no queries are being executed on it. This can happen if the number of queries being executed are less than the current pool of connections can handle.
+* **Idle Connection Timeout** is the maximum time for which any given connection can be idle. After this time had elapsed, the connection to the database will be closed.
+* **Connection Lifetime** is the maximum amount of time that a connection can be open (regardless of whether it’s idle or not).
+
+![connection-pool](./images/db-connection-pool.png)
+
+
+By configuring these options, we can set the behavior of our connection pool. The `*sql.DB` instance gives us various methods to set these options:
+```go
+db, err := sql.Open("pgx", "postgresql://localhost:5432/bird_encyclopedia")
+if err != nil {
+	log.Fatalf("could not connect to database: %v", err)
+}
+
+// Maximum Idle Connections
+db.SetMaxIdleConns(5)
+// Maximum Open Connections
+db.SetMaxOpenConns(10)
+// Idle Connection Timeout
+db.SetConnMaxIdleTime(1 * time.Second)
+// Connection Lifetime
+db.SetConnMaxLifetime(30 * time.Second)
+```
+
+The exact values of these options depend on the overall throughput and average query execution time of our application, but in general:
+
+1. It’s good to have a small percentage of your connections be idle to provide for sudden spikes in query throughput
+2. We should set the maximum number of open connections based on the network capacity of our database server and application servers, the lesser of which will be the limiting factor.
+
+If you open too many connections, you might run into network congestion issues, and if you open too few, you might run into query timeouts in case there are too many queries coming in at once. So make sure to monitor the performance of your application and adjust these values accordingly.
+
+# Query Timeouts - Using Context Cancellation
+
+If a query is running for longer than expected, we can cancel it using a [context](https://pkg.go.dev/context) variable. Cancelling a query is especially important in production applications, where we want to prevent queries from running indefinitely, and blocking other queries from running.
+
+**Context based cancellation** is a popular method of prematurely exiting from running processes. The `sql` library provides helper methods to use existing context variables to determine when to cancel a query.
+
+Let’s see how we can use context timeouts to stop a query midway:
+```go
+// create a parent context
+ctx := context.Background()
+// create a context from the parent context with a 300ms timeout
+ctx, _ = context.WithTimeout(ctx, 300*time.Millisecond)
+// The context variable is passed to the `QueryContext` method as
+// the first argument
+// the pg_sleep method is a function in Postgres that will halt for
+// the provided number of seconds. We can use this to simulate a 
+// slow query
+_, err = db.QueryContext(ctx, "SELECT * from pg_sleep(1)")
+if err != nil {
+	log.Fatalf("could not execute query: %v", err)
+}
+```
+
+Running this code should give us this error message:
+```bash
+2024/07/20 11:29:32 could not execute query: timeout: context deadline exceeded
+exit status 1
+```
+
+In production applications, `it is always preferred to have timeouts for all queries`: A sudden increase in throughput or a network issue can lead to queries slowing down by orders of magnitude.
+
