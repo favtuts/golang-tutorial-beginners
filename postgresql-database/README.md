@@ -317,3 +317,39 @@ Output:
 ```bash
 inserted 1 rows
 ```
+
+# Prepared Statements: Enhancing Performance and Security
+
+A prepared statement is a pre-compiled SQL query stored on the database server. When you execute a prepared statement, you’re essentially reusing the compiled query plan, reducing the overhead of parsing and planning the query repeatedly.
+
+**Benefits:**
+
+* Performance: Reduced query execution time, especially for frequently executed queries.
+* Security: Prepared statements effectively prevent SQL injection vulnerabilities, as the query structure is defined separately from user-supplied values.
+
+**Using Prepared Statements in Go:**
+
+1. Preparation: You use the `db.Prepare()` method to create a prepared statement.
+2. Execution: You execute the prepared statement using `stmt.Exec()` for write operations (INSERT, UPDATE, DELETE) or `stmt.Query()` for read operations (SELECT).
+
+```go
+// 1. Prepare the statement
+stmt, err := db.Prepare("SELECT bird, description FROM birds WHERE bird = $1")
+if err != nil {
+    log.Fatal(err)
+}
+defer stmt.Close() // Important to close prepared statements
+
+// 2. Execute the statement with a parameter
+var bird Bird
+err = stmt.QueryRow("eagle").Scan(&bird.Species, &bird.Description)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("result: %+v", bird)
+```
+
+Output:
+```bash
+result: {Species:eagle Description:bird of prey}
+```

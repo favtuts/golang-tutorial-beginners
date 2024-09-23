@@ -36,7 +36,8 @@ func main() {
 	// queryRow(db)
 	// queryRows(db)
 	// queryWithParameters(db)
-	insertRow(db)
+	// insertRow(db)
+	executePreparedStatement(db)
 }
 
 func queryRow(db *sql.DB) {
@@ -125,4 +126,21 @@ func insertRow(db *sql.DB) {
 	}
 	// we can log how many rows were inserted
 	fmt.Println("inserted", rowsAffected, "rows")
+}
+
+func executePreparedStatement(db *sql.DB) {
+	// 1. Prepare the statement
+	stmt, err := db.Prepare("SELECT bird, description FROM birds WHERE bird = $1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close() // Important to close prepared statements
+
+	// 2. Execute the statement with a parameter
+	var bird Bird
+	err = stmt.QueryRow("eagle").Scan(&bird.Species, &bird.Description)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("result: %+v", bird)
 }
