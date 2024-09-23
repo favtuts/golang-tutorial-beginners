@@ -443,3 +443,35 @@ exit status 1
 
 In production applications, `it is always preferred to have timeouts for all queries`: A sudden increase in throughput or a network issue can lead to queries slowing down by orders of magnitude.
 
+
+# Context with Value: Enhanced Logging and Tracing
+
+Context in Go is incredibly powerful. Besides deadlines and cancellation, we can use it to store request-scoped values. This is invaluable for logging and tracing database interactions.
+
+By associating a unique request ID with each request, we can easily follow the flow of operations in our logs.
+
+For example, if we have a web server that handles multiple requests concurrently, we can generate a unique request ID for each request and store it in the context. This request ID can then be used to log all operations related to that request:
+
+```go
+func handleRequest(w http.ResponseWriter, r *http.Request) {
+  // Generate a unique request ID
+	requestID := uuid.New().String() 
+
+  // Add request ID to the context
+	ctx := context.WithValue(r.Context(), "request_id", requestID) 
+
+  // ... Your database interactions using this context
+	fetchBird(ctx, db, "eagle")
+}
+
+func fetchBird(ctx context.Context, db *sql.DB, name string) {
+	requestID := ctx.Value("request_id").(string)
+	// ... Log the request ID along with your database operations
+	log.Printf("[%s] Fetching bird: %s", requestID, name) 
+
+	// ... (Rest of the database query logic)
+}
+```
+
+Now, each log message related to a specific request will carry the same `request_id`, making debugging and tracing a breeze.
+
