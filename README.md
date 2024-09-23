@@ -20,3 +20,4 @@ Collect all tutorials for Begginers
 * [Explorer structs and interfaces](./structs-interfaces/README.md)
 * [Understanding Go generics](./go-generics/README.md)
 * [JWT Authentication in Go](./jwt-go-example/)
+* [Using a PostgreSQL Database in Go](./postgresql-database/README.md)
