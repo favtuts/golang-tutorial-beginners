@@ -161,8 +161,9 @@ func main() {
 }
 ```
 
-The `db` variable in this example is an instance of *sql.DB which represents the reference to our database instance
-Although pgx provides its own interface for interacting with PostgreSQL, we are utilizing the pgx adapter with the database/sql interface. This approach allows us to leverage the standard database/sql package’s features while still benefiting from some of the performance and advanced features of pgx.
+The `db` variable in this example is an instance of [`*sql.DB`](https://pkg.go.dev/database/sql#DB) which represents the reference to our database instance
+
+Although `pgx` provides its [own interface](https://github.com/jackc/pgx?tab=readme-ov-file#choosing-between-the-pgx-and-databasesql-interfaces) for interacting with PostgreSQL, we are utilizing the `pgx` adapter with the `database/sql` interface. This approach allows us to leverage the standard `database/sql` package’s features while still benefiting from some of the performance and advanced features of `pgx`.
 
 If you’re running the database on your local machine, you can set the `DATABASE_URL` environment variable to `postgresql://localhost:5432/bird_encyclopedia` before running the code.
 
@@ -197,4 +198,36 @@ You can also set the environment variable to run debug in Visual Studio Code by 
         }
     ]
 }
+```
+
+# Executing SQL Queries
+
+We can use the `db.QueryRow` method when we require a single entry from our table (For example, fetching an entry based on its unique key).
+
+First, let’s define a struct to represent the results of each query:
+```go
+type Bird struct {
+	Species     string
+	Description string
+}
+```
+
+Let’s use the `QueryRow` method to fetch the first entry in our `birds` table:
+```go
+// `QueryRow` always returns a single row from the database
+row := db.QueryRow("SELECT bird, description FROM birds LIMIT 1")
+// Create a new `Bird` instance to hold our query results
+bird := Bird{}
+// the retrieved columns in our row are written to the provided addresses
+// the arguments should be in the same order as the columns defined in
+// our query
+if err := row.Scan(&bird.Species, &bird.Description); err != nil {
+	log.Fatalf("could not scan row: %v", err)
+}
+fmt.Printf("found bird: %+v\n", bird)
+```
+
+This will give us the following output:
+```bash
+found bird: {Species:pigeon Description:common in cities}
 ```
