@@ -23,3 +23,4 @@ Collect all tutorials for Begginers
 * [Using a PostgreSQL Database in Go](./postgresql-database/README.md)
 * [SQL Database Transactions in Go](./sql-transactions/README.md)
 * [Using Context in Golang](./go-contexts/README.md)
+* [Using the HTTP Client in Golang](./http-client-demo/README.md)
