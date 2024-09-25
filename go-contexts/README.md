@@ -180,10 +180,13 @@ halted operation2
 
 ## Cancellation Signals with Causes
 
-
 In the previous example, calling the `cancel()` function did not provide any information about why the context was cancelled. There are some cases where you might want to know the reason for cancellation.
 
 In these cases, we can use the [context.WithCancelCause](https://pkg.go.dev/context#WithCancelCause) instead. This function returns a context object, and a function that takes an error as an argument.
+
+
+![cancel-with-cause](./images/cancel-with-cause.png)
+
 
 ```go
 func operation1(ctx context.Context) error {
@@ -275,3 +278,58 @@ Run the code:
 $ go run deadline.go 
 Request failed: Get "http://google.com": context deadline exceeded
 ```
+
+# Context Values
+
+You can use the context variable to propagate request scoped values that are common across an operation. 
+
+Some example of values that you might want to propagate using the context variable are:
+
+1. Request IDs, so that you can trace the execution of a request across multiple function calls.
+2. Errors encountered when fetching data from a database
+3. Authentication tokens and user information
+
+We can implement the same functionality using the [context.WithValue](https://pkg.go.dev/context#WithValue) decorator function:
+
+![context-values](./images/context-values.png)
+
+```go
+// we need to set a key that tells us where the data is stored
+const keyID = "id"
+
+func main() {
+	// create a request ID as a random number
+  rand.Seed(time.Now().Unix())
+  requestID := rand.Intn(1000)
+
+  // create a new context variable with a key value pair
+	ctx := context.WithValue(context.Background(), keyID, requestID)
+	operation1(ctx)
+}
+
+func operation1(ctx context.Context) {
+	// do some work
+
+	// we can get the value from the context by passing in the key
+	log.Println("operation1 for id:", ctx.Value(keyID), " completed")
+	operation2(ctx)
+}
+
+func operation2(ctx context.Context) {
+	// do some work
+
+	// this way, the same ID is passed from one function call to the next
+	log.Println("operation2 for id:", ctx.Value(keyID), " completed")
+}
+```
+
+Run the code:
+```bash
+$ go run values.go 
+2024/09/25 10:15:49 operation1 for id: 364  completed
+2024/09/25 10:15:49 operation2 for id: 364  completed
+```
+
+Here, we’re creating a new context variable in the main function and a key value pair associated with it. The value can then be used by the successive function calls to obtain contextual information.
+
+
