@@ -177,3 +177,50 @@ Run the code example:
 $ go run cancellation.go 
 halted operation2
 ```
+
+## Cancellation Signals with Causes
+
+
+In the previous example, calling the `cancel()` function did not provide any information about why the context was cancelled. There are some cases where you might want to know the reason for cancellation.
+
+In these cases, we can use the [context.WithCancelCause](https://pkg.go.dev/context#WithCancelCause) instead. This function returns a context object, and a function that takes an error as an argument.
+
+```go
+func operation1(ctx context.Context) error {
+	time.Sleep(100 * time.Millisecond)
+	return errors.New("failed")
+}
+
+func operation2(ctx context.Context) {
+	select {
+	case <-time.After(500 * time.Millisecond):
+		fmt.Println("done")
+	case <-ctx.Done():
+    // We can get the error from the context
+    err := context.Cause(ctx)
+		fmt.Println("halted operation2 due to error: ", err)
+	}
+}
+
+func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancelCause(ctx)
+
+	go func() {
+		err := operation1(ctx)
+		if err != nil {
+      // this time, we pass in the error as an argument
+			cancel(err)
+		}
+	}()
+
+	// Run operation2 with the same context we use for operation1
+	operation2(ctx)
+}
+```
+
+Run the code:
+```bash
+$ go run cancel_with_cause.go 
+halted operation2 due to error:  failed
+```
