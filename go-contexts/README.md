@@ -224,3 +224,54 @@ Run the code:
 $ go run cancel_with_cause.go 
 halted operation2 due to error:  failed
 ```
+
+# Context Deadlines
+
+If we want to set a deadline for a process to complete, we should use `time` based cancellation.
+
+The functions are almost the same as the previous example, with a few additions:
+
+```go
+// The context will be cancelled after 3 seconds
+// If it needs to be cancelled earlier, the `cancel` function can
+// be used, like before
+ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+
+// Setting a context deadline is similar to setting a timeout, except
+// you specify a time when you want the context to cancel, rather than a duration.
+// Here, the context will be cancelled on 2009-11-10 23:00:00
+ctx, cancel := context.WithDeadline(ctx, time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC))
+```
+
+For example, consider making an HTTP API call to an external service. If the service takes too long, it’s better to fail early and cancel the request:
+
+```go
+func main() {
+	// Create a new context
+	// With a deadline of 100 milliseconds
+	ctx := context.Background()
+	ctx, _ = context.WithTimeout(ctx, 100*time.Millisecond)
+
+	// Make a request, that will call the google homepage
+	req, _ := http.NewRequest(http.MethodGet, "http://google.com", nil)
+	// Associate the cancellable context we just created to the request
+	req = req.WithContext(ctx)
+
+	// Create a new HTTP client and execute the request
+	client := &http.Client{}
+	res, err := client.Do(req)
+	// If the request failed, log to STDOUT
+	if err != nil {
+		fmt.Println("Request failed:", err)
+		return
+	}
+	// Print the status code if the request succeeds
+	fmt.Println("Response received, status code:", res.StatusCode)
+}
+```
+
+Run the code:
+```bash
+$ go run deadline.go 
+Request failed: Get "http://google.com": context deadline exceeded
+```
