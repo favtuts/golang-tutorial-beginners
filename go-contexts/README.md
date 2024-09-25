@@ -14,7 +14,38 @@ Then create the module
 $ go mod init github.com/favtuts/go-contexts
 ```
 
-# Why Do We Need Cancellation?
+# When do we use Context?
+
+If used correctly, the context package can help you:
+
+* Cancel long running processes that are no longer needed
+* Pass around request-scoped data and cancellation signals between function calls
+* Set deadlines for processes to complete
+
+
+The main use of a context instance is to pass common scoped data within our application. For example:
+
+* Request IDs for function calls and goroutines that are part of the same HTTP request
+* Errors encountered when fetching data from a database
+* Cancellation signals created when performing async operations using goroutines
+
+![context-in-practice](./images/context-in-practice.png)
+
+
+# Creating a Derived Context
+
+
+When you receive a context from an external source, you can add your own values and cancellation signals to it by creating a derived context.
+
+We can do this by using a decorator function like [context.WithValue](https://pkg.go.dev/context#WithValue), [context.WithCancel](https://pkg.go.dev/context#WithCancel), or [context.WithDeadline](https://pkg.go.dev/context#WithDeadline):
+
+![derived-context](./images/derived-context.png)
+
+
+# Context Cancellation Signals
+
+
+## Why Do We Need Cancellation?
 
 In short, we need cancellation to prevent our system from doing unnecessary work.
 
@@ -45,7 +76,7 @@ There are two sides to context cancellation:
 1. Listening for the cancellation signal
 2. Emitting the cancellation signal
 
-# Listening For Cancellation Signals
+## Listening For Cancellation Signals
 
 The `Context` type provides a `Done()` method. This returns a channel that receives an empty `struct{}` type every time the context receives a cancellation signal.
 
@@ -84,4 +115,65 @@ processing request
 processing request
 
 request cancelled
+```
+
+## Emitting a Cancellation Signal
+
+If you have an operation that could be cancelled, you will have to emit a cancellation signal through the context.
+
+This can be done using the `WithCancel` function in the [context package](https://pkg.go.dev/context#WithCancel), which returns a context object, and a function.
+
+```go
+ctx, fn := context.WithCancel(ctx)
+```
+
+This function takes no arguments, and does not return anything, and is called when you want to cancel the context.
+
+Consider the case of 2 dependent operations. Here, “dependent” means if one fails, it doesn’t make sense for the other to complete. If we get to know early on that one of the operations failed, we would like to cancel all dependent operations.
+
+```go
+func operation1(ctx context.Context) error {
+	// Let's assume that this operation failed for some reason
+	// We use time.Sleep to simulate a resource intensive operation
+	time.Sleep(100 * time.Millisecond)
+	return errors.New("failed")
+}
+
+func operation2(ctx context.Context) {
+	// We use a similar pattern to the HTTP server
+	// that we saw in the earlier example
+	select {
+	case <-time.After(500 * time.Millisecond):
+		fmt.Println("done")
+	case <-ctx.Done():
+		fmt.Println("halted operation2")
+	}
+}
+
+func main() {
+	// Create a new context
+	ctx := context.Background()
+	// Create a new context, with its cancellation function
+	// from the original context
+	ctx, cancel := context.WithCancel(ctx)
+
+	// Run two operations: one in a different go routine
+	go func() {
+		err := operation1(ctx)
+		// If this operation returns an error
+		// cancel all operations using this context
+		if err != nil {
+			cancel()
+		}
+	}()
+
+	// Run operation2 with the same context we use for operation1
+	operation2(ctx)
+}
+```
+
+Run the code example:
+```bash
+$ go run cancellation.go 
+halted operation2
 ```
