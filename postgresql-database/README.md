@@ -5,8 +5,8 @@
 
 Locate the project directory
 ```bash
-$ mkdir structs-interfaces
-$ cd structs-interfaces
+$ mkdir postgresql-database
+$ cd postgresql-database
 ```
 
 Then create the module
