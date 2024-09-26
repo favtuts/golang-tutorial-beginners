@@ -373,3 +373,51 @@ Output from server:
 
 We can see that the `X-Custom-Header` header was sent with the request.
 
+# Setting Timeouts
+
+When making HTTP requests, we should always set a timeout. This ensures that our application does not hang indefinitely if the server is not reachable, or if the server takes too long to respond.
+
+We can set the `Timeout` field of the [http.Client](https://pkg.go.dev/net/http#Client) type to set a timeout for all requests made using that client.
+
+```go
+func main() {
+	url := "http://www.example.com"
+
+	// set a timeout of 50 milliseconds. This means that if the server does not
+	// respond within 50 milliseconds, the request will fail with a timeout error
+	http.DefaultClient.Timeout = 50 * time.Millisecond
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// print the status code
+	fmt.Println("Status:", resp.Status)
+}
+```
+
+In our case, the server at example.com does indeed take longer than 50ms to respond, so the request fails with a timeout error.
+
+Run the code:
+```bash
+$ go run deadlines.go 
+2024/09/26 16:20:47 Get "http://www.example.com": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+exit status 1
+```
+
+Output from the echo server:
+```bash
+[server] event: connection (socket#17)
+[socket#17] event: resume
+[socket#17] event: data
+--> GET / HTTP/1.1
+--> Host: localhost:3000
+--> User-Agent: Go-http-client/1.1
+--> X-Custom-Header: custom-value
+--> Accept-Encoding: gzip
+-->
+-->
+[socket#17] event: error (msg: read ECONNRESET)
+[socket#17] event: close
+```
