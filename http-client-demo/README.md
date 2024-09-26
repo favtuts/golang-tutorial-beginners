@@ -95,7 +95,6 @@ $ go run get_request.go
 
 # Making a POST Request
 
-
 To make a POST request, we can use the [http.Post](https://pkg.go.dev/net/http#Post) method. This method takes in the URL, the content type, and the request body as parameters.
 
 The request body allows us to send data to the server, which is not possible with a GET request. Let’s see how we can send plain text data as the request body:
@@ -185,3 +184,71 @@ Then you can check the http-echo-server console:
 [socket#1] event: finish
 [socket#1] event: close
 ```
+
+## Sending JSON Data
+
+Sending JSON data is a common use case for POST requests. To send JSON data, we can use the [http.Post](https://pkg.go.dev/net/http#Post) method, but we need to make some changes:
+
+1. We need to set the content type header to `application/json` - this tells the server that the request body is a JSON string
+2. The request body needs to be a JSON string - we can use the JSON standard library to convert a Go struct to a JSON string
+
+```go
+// Person is a struct that represents the data we will send in the request body
+type Person struct {
+	Name string
+	Age  int
+}
+
+func main() {
+	url := "http://localhost:3000"
+
+	// create post body using an instance of the Person struct
+	p := Person{
+		Name: "John Doe",
+		Age:  25,
+	}
+	// convert p to JSON data
+	jsonData, err := json.Marshal(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// We can set the content type here
+	resp, err := http.Post(url, "application/json", bytes.NewReader(jsonData))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Status:", resp.Status)
+}
+```
+
+Run the code:
+```bash
+$ go run post_request_json.go 
+Status: 200 OK
+```
+
+Output from the echo server
+```bash
+[server] event: connection (socket#2)
+[socket#2] event: resume
+[socket#2] event: data
+--> POST / HTTP/1.1
+--> Host: localhost:3000
+--> User-Agent: Go-http-client/1.1
+--> Content-Length: 28
+--> Content-Type: application/json
+--> Accept-Encoding: gzip
+-->
+--> {"Name":"John Doe","Age":25}
+[socket#2] event: readable
+[socket#2] event: end
+[socket#2] event: prefinish
+[socket#2] event: finish
+[socket#2] event: close
+```
+
+As we can see, the server received the stringified JSON data as the request body, and the `Content-Type` header value is set to `application/json`.
+
