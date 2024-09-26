@@ -92,3 +92,96 @@ $ go run get_request.go
 </body>
 </html>
 ```
+
+# Making a POST Request
+
+
+To make a POST request, we can use the [http.Post](https://pkg.go.dev/net/http#Post) method. This method takes in the URL, the content type, and the request body as parameters.
+
+The request body allows us to send data to the server, which is not possible with a GET request. Let’s see how we can send plain text data as the request body:
+
+```go
+func main() {
+	// we will run an HTTP server locally to test the POST request
+	url := "http://localhost:3000/"
+
+	// create post body
+	body := strings.NewReader("This is the request body.")
+
+	resp, err := http.Post(url, "text/plain", body)
+	if err != nil {
+		// we will get an error at this stage if the request fails, such as if the
+		// requested URL is not found, or if the server is not reachable.
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// print the status code
+	fmt.Println("Status:", resp.Status)
+}
+```
+
+To test this request, we will need to run an HTTP server locally. We will do this using the [http-echo-server package](https://github.com/watson/http-echo-server).
+After installation, we can run the command `http-echo-server 3000` on a new terminal to start the server on port 3000.
+
+This echo server will return a 200 (OK) response for any request sent to `http://localhost:3000` and print the request details, like the method, path, headers and body.
+
+```bash
+$ nvm ls
+        v6.17.1
+       v10.24.1
+      v12.22.12
+       v14.21.2
+       v18.20.3
+->     v20.14.0
+$ node -v
+v20.14.0
+$ npm --version
+10.8.2
+$ npm install http-echo-server -g
+
+added 2 packages in 2s
+npm notice
+npm notice New patch version of npm available! 10.8.2 -> 10.8.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v10.8.3
+npm notice To update run: npm install -g npm@10.8.3
+npm notice
+```
+
+To the start the echo server:
+```bash
+$ http-echo-server 3000
+[server] event: listening (port: 3000)
+```
+
+Or use the `PORT` environment:
+```bash
+export PORT=3000
+http-echo-server
+```
+
+Run the code example:
+```bash
+$ go run post_request.go 
+Status: 200 OK
+```
+
+Then you can check the http-echo-server console:
+```bash
+[server] event: connection (socket#1)
+[socket#1] event: resume
+[socket#1] event: data
+--> POST / HTTP/1.1
+--> Host: localhost:3000
+--> User-Agent: Go-http-client/1.1
+--> Content-Length: 25
+--> Content-Type: text/plain
+--> Accept-Encoding: gzip
+-->
+--> This is the request body.
+[socket#1] event: readable
+[socket#1] event: end
+[socket#1] event: prefinish
+[socket#1] event: finish
+[socket#1] event: close
+```
