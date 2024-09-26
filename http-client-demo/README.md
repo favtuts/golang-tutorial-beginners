@@ -252,3 +252,64 @@ Output from the echo server
 
 As we can see, the server received the stringified JSON data as the request body, and the `Content-Type` header value is set to `application/json`.
 
+
+## Parsing JSON Responses
+
+We can use the JSON standard library to parse JSON data from the response body into a Go struct. Let’s look at an example:
+```go
+// parse the response
+responsePerson := Person{}
+err = json.NewDecoder(resp.Body).Decode(&responsePerson)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+# Making PUT, PATCH, and DELETE Requests
+
+Unlike the `http.Get` and `http.Post` methods, there are no helper methods for PUT, PATCH, and DELETE requests.
+
+Instead, we need to use the [http.NewRequest](https://pkg.go.dev/net/http#NewRequest) method to create a new request, and then use the [http.Client.Do](https://pkg.go.dev/net/http#Client.Do) method to send the request:
+
+```go
+func main() {
+	// declare the request url and body
+	url := "http://localhost:3000/some/path"
+	body := strings.NewReader("This is the request body.")
+
+	// we can set a custom method here, like http.MethodPut
+	// or http.MethodDelete, http.MethodPatch, etc.
+	req, err := http.NewRequest(http.MethodPut, url, body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		// we will get an error at this stage if the request fails, such as if the
+		// requested URL is not found, or if the server is not reachable.
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// print the status code
+	fmt.Println("Status:", resp.Status)
+}
+```
+
+Run the code:
+```bash
+$ go run custom_request.go 
+Status: 200 OK
+```
+
+Output from the echo server:
+```bash
+--> PUT /some/path HTTP/1.1
+--> Host: localhost:3000
+--> User-Agent: Go-http-client/1.1
+--> Content-Length: 25
+--> Accept-Encoding: gzip
+-->
+--> This is the request body.
+```
