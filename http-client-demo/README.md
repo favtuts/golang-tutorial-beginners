@@ -313,3 +313,63 @@ Output from the echo server:
 -->
 --> This is the request body.
 ```
+
+# Setting Headers
+
+Headers are a way to send metadata along with the request, as well as the response. They are used for a wide variety of purposes. For example:
+
+1. The `Content-Type` header that was set in the previous examples tells the server what type of data the request body contains.
+2. The `Authorization` header is used to send authentication information to the server.
+3. The `User-Agent` header is used to identify the client making the request.
+4. We can even set custom headers for application-specific purposes.
+
+We can use the [http.Header](https://pkg.go.dev/net/http#Header) type to set headers for our requests, and read headers from the response. The underlying data structure is a map of strings to slices of strings, where each key is the header name, and the value is a slice of strings containing the header values.
+
+Let’s look at an example where we set a custom header that is sent with our request, and also read the headers from the response:
+
+```go
+func main() {
+	url := "http://localhost:3000"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// add a custom header to the request
+	// here we specify the header name and value as arguments
+	req.Header.Add("X-Custom-Header", "custom-value")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// print all the response headers
+	fmt.Println("Response headers:")
+	for k, v := range resp.Header {
+		fmt.Printf("%s: %s\n", k, v)
+	}
+}
+```
+
+Run the code:
+```bash
+$ go run headers.go
+
+Response headers:
+Access-Control-Allow-Origin: [*]
+Date: [Thu Sep 26 2024 16:16:31 GMT+0700 (Indochina Time)]
+Content-Type: [text/plain]
+```
+
+Output from server:
+```bash
+--> GET / HTTP/1.1
+--> Host: localhost:3000
+--> User-Agent: Go-http-client/1.1
+--> X-Custom-Header: custom-value
+--> Accept-Encoding: gzip
+```
+
+We can see that the `X-Custom-Header` header was sent with the request.
+
