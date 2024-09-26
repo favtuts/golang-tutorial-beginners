@@ -421,3 +421,39 @@ Output from the echo server:
 [socket#17] event: error (msg: read ECONNRESET)
 [socket#17] event: close
 ```
+
+## Setting a Timeout for a Single Request
+
+Sometimes, we might want to set a timeout for a single request, instead of setting a timeout for all requests made using a client.
+
+We can do this by using a context with a timeout, and bundle it with the request.
+
+```go
+func main() {
+	url := "http://www.example.com"
+
+	// create a new context instance with a timeout of 50 milliseconds
+	ctx, _ := context.WithTimeout(context.Background(), 50*time.Millisecond)
+
+	// create a new request using the context instance
+	// now the context timeout will be applied to this request as well
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Status:", resp.Status)
+}
+
+```
+
+Run the code:
+```bash
+$ go run deadline_per_request.go 
+2024/09/26 16:30:02 Get "http://www.example.com": context deadline exceeded
+exit status 1
+```
