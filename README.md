@@ -24,3 +24,4 @@ Collect all tutorials for Begginers
 * [SQL Database Transactions in Go](./sql-transactions/README.md)
 * [Using Context in Golang](./go-contexts/README.md)
 * [Using the HTTP Client in Golang](./http-client-demo/README.md)
+* [Guide to JSON in Golang](./json-examples/README.md)
