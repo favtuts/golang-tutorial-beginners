@@ -94,3 +94,49 @@ Run the code:
 $ go run json_to_array_objects.go 
 Birds : [{Species:pigeon Description:likes to perch on rocks} {Species:eagle Description:bird of prey}]
 ```
+
+## Nested Objects
+
+Now, consider the case when you have a property called Dimensions, that measures the Height and Length of the bird in question:
+```json
+{
+  "species": "pigeon",
+  "description": "likes to perch on rocks"
+  "dimensions": {
+    "height": 24,
+    "width": 10
+  }
+}
+```
+
+To add a nested `dimensions` object, lets create a `dimensions` struct :
+```go
+type Dimensions struct {
+  Height int
+  Width int
+}
+```
+
+Now, the `Bird` struct will include a `Dimensions` field:
+```go
+type Bird struct {
+  Species string
+  Description string
+  Dimensions Dimensions
+}
+```
+
+We can unmarshal this data using the same method as before:
+```go
+birdJson := `{"species":"pigeon","description":"likes to perch on rocks", "dimensions":{"height":24,"width":10}}`
+var bird Bird
+json.Unmarshal([]byte(birdJson), &bird)
+fmt.Println(bird)
+// {pigeon likes to perch on rocks {24 10}}
+```
+
+Run the code:
+```bash
+$ go run json_to_nested_objects.go 
+{pigeon likes to perch on rocks {24 10}}
+```
