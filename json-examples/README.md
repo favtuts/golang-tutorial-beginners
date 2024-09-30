@@ -28,6 +28,8 @@ There are two types of data you will encounter when working with JSON:
 
 # Decoding JSON Into Structs (Structured Data)
 
+## Struct Object
+
 “Structured data” refers to data where you know the format beforehand. For example, let’s say you have a bird object, where each bird has a `species` field and a `description` field :
 ```json
 {
@@ -59,4 +61,36 @@ Run the code:
 ```bash
 $ go run json_to_struct_object.go
 Species: pigeon, Description: likes to perch on rocks
+```
+
+
+## Array of objects
+
+Let’s look at how we can decode an array of objects, like below:
+```json
+[
+  {
+    "species": "pigeon",
+    "description": "likes to perch on rocks"
+  },
+  {
+    "species":"eagle",
+    "description":"bird of prey"
+  }
+]
+```
+
+Since each element of the array has the structure of the Bird struct, you can unmarshal it by creating a slice of birds :
+```bash
+birdJson := `[{"species":"pigeon","description":"likes to perch on rocks"},{"species":"eagle","description":"bird of prey"}]`
+var birds []Bird
+json.Unmarshal([]byte(birdJson), &birds)
+fmt.Printf("Birds : %+v", birds)
+//Birds : [{Species:pigeon Description:} {Species:eagle Description:bird of prey}]
+```
+
+Run the code:
+```bash
+$ go run json_to_array_objects.go 
+Birds : [{Species:pigeon Description:likes to perch on rocks} {Species:eagle Description:bird of prey}]
 ```
