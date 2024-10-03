@@ -175,3 +175,46 @@ $ go run json_to_primitive_types.go
 3.1412
 bird
 ```
+
+## Time Values
+
+Did you know that if you try to decode an ISO 8601 date string like `2021-10-18T11:08:47.577Z` into a `time.Time` struct, it will work out of the box?
+```go
+dateJson := `"2021-10-18T11:08:47.577Z"`
+var date time.Time
+json.Unmarshal([]byte(dateJson), &date)
+
+fmt.Println(date)
+// 2021-10-18 11:08:47.577 +0000 UTC
+```
+
+Run the code:
+```bash
+$ go run json_to_time_values.go
+2021-10-18 11:08:47.577 +0000 UTC
+```
+
+Here, `dateJson` is a JSON string type, but when we unmarshal it into a `time.Time` variable, it is able to understand the JSON data on its own. Well, this is because the `time.Time` struct has a custom [UnmarshalJSON](https://pkg.go.dev/time#Time.UnmarshalJSON) method that handles this case.
+
+This will even work if the `time.Time` type is embedded within another struct:
+```go
+type Bird struct {
+	Species     string
+	Description string
+	CreatedAt   time.Time
+}
+
+func main() {
+	birdJson := `{"species": "pigeon","description": "likes to perch on rocks", "createdAt": "2021-10-18T11:08:47.577Z"}`
+	var bird Bird
+	json.Unmarshal([]byte(birdJson), &bird)
+	fmt.Println(bird)
+	// {pigeon likes to perch on rocks 2021-10-18 11:08:47.577 +0000 UTC}
+}
+```
+
+Run the code:
+```bash
+$ go run json_to_time_values.go 
+{pigeon likes to perch on rocks 2021-10-18 11:08:47.577 +0000 UTC}
+```
