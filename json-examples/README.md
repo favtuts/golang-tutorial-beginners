@@ -288,3 +288,38 @@ Run the code:
 $ go run json_implement_unmarshaler.go 
 {Species:pigeon Description:likes to perch on rocks Dimensions:{Height:20 Width:30}}
 ```
+
+# JSON Struct Tags – Custom Field Names
+
+We saw earlier that Go uses convention to determine the attribute name for mapping JSON properties. Although sometimes, we want a different attribute name than the one provided in your JSON data. For example, consider the below data:
+```json
+{
+  "birdType": "pigeon",
+  "what it does": "likes to perch on rocks"
+}
+```
+
+Here, we would prefer `birdType` to remain as the `Species` attribute in our Go code. It is also not possible for us to provide a suitable attribute name for a key like "what it does".
+
+To solve this, we can use struct field tags:
+```go
+type Bird struct {
+  Species string `json:"birdType"`
+  Description string `json:"what it does"`
+}
+```
+
+Now, we can explicitly tell our code which JSON property to map to which attribute.
+```go
+birdJson := `{"birdType": "pigeon","what it does": "likes to perch on rocks"}`
+var bird Bird
+json.Unmarshal([]byte(birdJson), &bird)
+fmt.Println(bird)
+// {pigeon likes to perch on rocks}
+```
+
+Run the code:
+```bash
+$ go run json_custom_field_names.go 
+{pigeon likes to perch on rocks}
+```
