@@ -400,3 +400,255 @@ Now, our code will return early and give the output:
 $ go run json_validating_data.go 
 invalid JSON string: {"birds":{"pigeon":"likes to perch on rocks","eagle":"bird of prey"
 ```
+
+
+# Marshaling JSON Data
+
+Marshaling is the process of transforming structured data into a serializable JSON string. Similar to unmarshaling, we can marshal data into structs, maps, and slices.
+
+## Marshaling Structured Data
+
+Let’s consider our `Bird` struct from before, and see the code required to generate a JSON string from a variable of its type:
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+// The same json tags will be used to encode data into JSON
+type Bird struct {
+	Species     string `json:"birdType"`
+	Description string `json:"what it does"`
+}
+
+func main() {
+	pigeon := &Bird{
+		Species:     "Pigeon",
+		Description: "likes to eat seed",
+	}
+
+	// we can use the json.Marshal function to
+	// encode the pigeon variable to a JSON string
+	data, _ := json.Marshal(pigeon)
+	// data is the JSON string represented as bytes
+	// the second parameter here is the error, which we
+	// are ignoring for now, but which you should ideally handle
+	// in production grade code
+
+	// to print the data, we can typecast it to a string
+	fmt.Println(string(data))
+}
+```
+
+Run the code:
+```bash
+$ go run encode_json_structured_data.go 
+{"birdType":"Pigeon","what it does":"likes to eat seed"}
+```
+
+## Ignoring Empty Fields
+
+In some cases, we would want to ignore a field in our JSON output, if its value is empty. We can use the `“omitempty”` property for this purpose.
+
+For example, if the `Description` field is missing for the `pigeon` object, the key will not appear in the encoded JSON string incase we set this property:
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Bird struct {
+	Species     string `json:"birdType"`
+	// we can set the "omitempty" property as part of the JSON tag
+	Description string `json:"what it does,omitempty"`
+}
+
+func main() {
+	pigeon := &Bird{
+		Species:     "Pigeon",
+	}
+
+	data, _ := json.Marshal(pigeon)
+
+	fmt.Println(string(data))
+}
+```
+
+
+Run the code:
+```bash
+$ go run encode_json_ignoring_empty_fields.go 
+{"birdType":"Pigeon"}
+```
+
+If we want to always ignore a field, we can use the `json:"-"` struct tag to denote that we never want this field included:
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Bird struct {
+	Species     string `json:"-"`
+}
+
+func main() {
+	pigeon := &Bird{
+		Species:     "Pigeon",
+	}
+
+	data, _ := json.Marshal(pigeon)
+
+	fmt.Println(string(data))
+}
+```
+
+Run the code:
+```bash
+$ go run encode_json_ignoring_always.go 
+{}
+```
+
+## Marshaling Slices
+
+```go
+pigeon := &Bird{
+  Species:     "Pigeon",
+  Description: "likes to eat seed",
+}
+
+// Now we pass a slice of two pigeons
+data, _ := json.Marshal([]*Bird{pigeon, pigeon})
+fmt.Println(string(data))
+```
+
+Run the code:
+```bash
+$ go run encode_json_slice_array.go 
+[{"birdType":"Pigeon","what it does":"likes to eat seed"},{"birdType":"Pigeon","what it does":"likes to eat seed"}]
+```
+
+## Marshaling Maps
+
+We can use maps to encode unstructured data.
+The keys of the map need to be strings, or a type that can convert to strings. The values can be any serializable type.
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func main() {
+	// The keys need to be strings, the values can be
+	// any serializable value
+	birdData := map[string]any{
+		"birdSounds": map[string]string{
+			"pigeon": "coo",
+			"eagle":  "squawk",
+		},
+		"total birds": 2,
+	}
+
+	// JSON encoding is done the same way as before	
+	data, _ := json.Marshal(birdData)
+	fmt.Println(string(data))
+}
+```
+
+Run the code:
+```bash
+$ go run encode_json_maps_unstructured_data.go 
+{"birdSounds":{"eagle":"squawk","pigeon":"coo"},"total birds":2}
+```
+
+## Encoding “Null” Values
+
+Sometimes, we may want to send a `null` value in our JSON data. Any `nil` values in our Go code will be encoded as `null` in the JSON string. But this means that any nullable fields in our struct must be pointers, or any other type that can be `nil`.
+
+For example, consider the case where we want to send a `null` value for the `Description` field of our `Bird` struct. We can do this by using a pointer to the `Description` field:
+
+```go
+type Bird struct {
+	Species     string
+	Description *string
+}
+
+func main() {
+	pigeon := &Bird{
+		Species:     "Pigeon",
+		Description: nil,
+	}
+
+	data, _ := json.Marshal(pigeon)
+	fmt.Println(string(data))
+	// {"Species":"Pigeon","Description":null}
+
+	
+}
+```
+
+When using map types, we can also use the `nil` value for any key to encode `null` values:
+```bash
+birdData := map[string]any{
+	"total birds": 2,
+	"nullValue":   nil,
+}
+
+data, _ = json.Marshal(birdData)
+fmt.Println(string(data))
+// {"nullValue":null,"total birds":2}
+```
+
+Run the code:
+```bash
+$ go run encode_json_null_values.go 
+{"Species":"Pigeon","Description":null}
+{"nullValue":null,"total birds":2}
+```
+
+## Custom Encoding Logic
+
+We can also create custom types that implement the [Marshaler](https://pkg.go.dev/encoding/json#Marshaler) interface. This will allow us to define custom logic for encoding our custom types into JSON data.
+
+```go
+type Dimensions struct {
+	Height int
+	Width  int
+}
+
+// marshals a Dimensions struct into a JSON string
+// with format "heightxwidth"
+func (d Dimensions) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%dx%d"`, d.Height, d.Width)), nil
+}
+
+func main() {
+	bird := Bird{
+		Species: "pigeon",
+		Dimensions: Dimensions{
+			Height: 24,
+			Width:  10,
+		},
+	}
+	birdJson, _ := json.Marshal(bird)
+	fmt.Println(string(birdJson))
+	// {"Species":"pigeon","Dimensions":"24x10"}
+}
+
+```
+
+Run the code:
+```bash
+$ go run encode_json_custom_logic.go 
+{"Species":"pigeon","Dimensions":"24x10"}
+```
