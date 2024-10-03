@@ -652,3 +652,30 @@ Run the code:
 $ go run encode_json_custom_logic.go 
 {"Species":"pigeon","Dimensions":"24x10"}
 ```
+
+# Printing Formatted (Pretty-Printed) JSON
+
+By default, the JSON encoder will not add any whitespace to the encoded JSON string. This is done to reduce the size of the JSON string, and is useful when sending data over the network.
+
+But, if you want to print the JSON string to the console, or write it to a file, you may want to add whitespace to make it more readable. We can do this by using the [json.MarshalIndent](https://pkg.go.dev/encoding/json#MarshalIndent) function:
+
+```go
+bird := Bird{
+	Species: "pigeon",
+	Description: "likes to eat seed",
+}
+
+// The second parameter is the prefix of each line, and the third parameter
+// is the indentation to use for each level
+data, _ := json.MarshalIndent(bird, "", "  ")
+fmt.Println(string(data)
+```
+
+Run the code:
+```bash
+$ go run encode_json_indent_readable.go 
+{
+  "Species": "pigeon",
+  "Description": "likes to eat seed"
+}
+```
