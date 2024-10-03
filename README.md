@@ -25,3 +25,4 @@ Collect all tutorials for Begginers
 * [Using Context in Golang](./go-contexts/README.md)
 * [Using the HTTP Client in Golang](./http-client-demo/README.md)
 * [Guide to JSON in Golang](./json-examples/README.md)
+* [Working With Time, Duration, and Dates](./time-examples/README.md)
