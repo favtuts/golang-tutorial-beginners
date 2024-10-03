@@ -368,3 +368,35 @@ $ go run json_to_maps_unstructured_data.go
 pigeon likes to perch on rocks
 eagle bird of prey
 ```
+
+# Validating JSON data
+
+In real-world applications, we may sometimes get invalid (or incomplete) JSON data. Let’s see an example where some of the data is cut off, and the resulting JSON string is invalid:
+
+```json
+{
+  "birds": {
+    "pigeon":"likes to perch on rocks",
+    "eagle":"bird of prey"
+
+```
+
+In actual applications, this may happen due to network errors or incomplete data written to files. If we try to unmarshal this, our code will panic:
+```bash
+panic: interface conversion: interface {} is nil, not map[string]interface {}
+```
+
+we can use the [json.Valid](https://pkg.go.dev/encoding/json#Valid) function to check the validity of our JSON data:
+```go
+if !json.Valid([]byte(birdJson)) {
+	// handle the error here
+	fmt.Println("invalid JSON string:", birdJson)
+	return
+}
+```
+
+Now, our code will return early and give the output:
+```bash
+$ go run json_validating_data.go 
+invalid JSON string: {"birds":{"pigeon":"likes to perch on rocks","eagle":"bird of prey"
+```
