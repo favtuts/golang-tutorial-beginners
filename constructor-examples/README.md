@@ -131,3 +131,47 @@ func NewRemotePizza(url string) (Pizza, error) {
   }, nil
 }
 ```
+
+Run the code:
+```bash
+$ go run custom_constructor_functions.go 
+
+could not construct new Pizza: cannot fetch Piza info from url: http://mypizza.org
+```
+
+
+# Interface Constructors
+
+A constructor can return an interface directly, while initializing a concrete type within.
+
+This can be helpful if we want to make the `struct` private while making its initialization public.
+
+Let’s see how we can apply this to our `Pizza`: if we have a bakery, we can consider a pizza as just one of many “bakeable” items.
+
+We can create a `Bakeable` interface to represent this, and add a new `isBaked` field to the `Pizza` struct:
+
+```go
+type Pizza struct {
+	slices   int
+	toppings []string
+	isBaked  bool
+}
+
+func (p Pizza) Bake() {
+	p.isBaked = true
+}
+
+// Pizza implements Bakeable
+type Bakeable interface {
+	Bake()
+}
+
+// this constructor will return a `Bakeable`
+// and not a `Pizza`
+func NewUnbakedPizza(toppings []string) Bakeable {
+	return Pizza{
+		slices:   6,
+		toppings: toppings,
+	}
+}
+```
