@@ -17,6 +17,7 @@ $ go mod init github.com/favtuts/functional-options
 # Run the code:
 
 ```bash
-$ go run main.go 
+$ go run main.go
 &{wood true 2}
+&{Material:concrete HasFireplace:false Floors:3}
 ```
