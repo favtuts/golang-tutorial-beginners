@@ -27,6 +27,7 @@ Collect all tutorials for Begginers
 * [Guide to JSON in Golang](./json-examples/README.md)
 * [Working With Time, Duration, and Dates](./time-examples/README.md)
 * [Using Maps in Golang](./map-examples/README.md)
+* [Constructors in Golang](./constructor-examples/README.md)
 
 # Practical Go Lessons
 * https://www.practical-go-lessons.com/
