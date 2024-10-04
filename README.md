@@ -30,6 +30,7 @@ Collect all tutorials for Begginers
 * [Constructors in Golang](./constructor-examples/README.md)
 * [Variables in Golang](./variables-examples/README.md)
 * [Functional Options Golang](./functional-options/README.md)
+* [Command Pattern in Golang](./command-pattern/README.md)
 
 # Practical Go Lessons
 * https://www.practical-go-lessons.com/
