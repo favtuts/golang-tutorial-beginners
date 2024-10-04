@@ -29,6 +29,7 @@ Collect all tutorials for Begginers
 * [Using Maps in Golang](./map-examples/README.md)
 * [Constructors in Golang](./constructor-examples/README.md)
 * [Variables in Golang](./variables-examples/README.md)
+* [Functional Options Golang](./functional-options/README.md)
 
 # Practical Go Lessons
 * https://www.practical-go-lessons.com/
