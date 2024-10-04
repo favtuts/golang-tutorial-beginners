@@ -13,3 +13,10 @@ Then create the module
 ```bash
 $ go mod init github.com/favtuts/functional-options
 ```
+
+# Run the code:
+
+```bash
+$ go run main.go 
+&{wood true 2}
+```
