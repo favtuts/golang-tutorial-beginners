@@ -28,6 +28,7 @@ Collect all tutorials for Begginers
 * [Working With Time, Duration, and Dates](./time-examples/README.md)
 * [Using Maps in Golang](./map-examples/README.md)
 * [Constructors in Golang](./constructor-examples/README.md)
+* [Variables in Golang](./variables-examples/README.md)
 
 # Practical Go Lessons
 * https://www.practical-go-lessons.com/
